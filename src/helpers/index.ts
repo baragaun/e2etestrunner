@@ -4,12 +4,10 @@ import replaceVars from './replaceVars';
 import replaceVarsInObject from './replaceVarsInObject';
 import validateValue from './validateValue';
 
-const helpers = {
+export const bgE2eTestRunnerHelpers = {
   fetchJson,
   mergeVars,
   replaceVars,
   replaceVarsInObject,
   validateValue,
 }
-
-export default helpers
