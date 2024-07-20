@@ -1,5 +1,6 @@
-import run from './run';
-import fs from 'fs';
+const fs = require('fs');
+
+const { run } = require('./run');
 
 let config;
 let configPath = 'config/config.json';
@@ -28,5 +29,7 @@ if (configPath) {
   }
 }
 
-const result = await run(config);
-console.log(result);
+(async() => {
+  const result = await run(config);
+  console.log(result);
+})();

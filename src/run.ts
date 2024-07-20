@@ -4,7 +4,7 @@ import { E2eTestSuiteConfig, LogLevel } from './definitions';
 import { BgE2eTestSuite } from './BgE2eTestSuite';
 import logger from './helpers/logger';
 
-const run = async (
+export const run = async (
   config?: E2eTestSuiteConfig,
   logLevel?: LogLevel,
 ): Promise<string> => {
