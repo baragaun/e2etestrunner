@@ -1,6 +1,5 @@
 export enum E2eTestType {
   jsonHttpRequest = 'json-http-request',
-  wait = 'wait',
 }
 
 export enum LogLevel {

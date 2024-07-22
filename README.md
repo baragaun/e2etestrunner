@@ -48,7 +48,7 @@ The configuration has this top level structure:
            "headers": { "header5": <var5>, "header6": <var6> },
            "data": <HTTP POST body>,
            "response": {
-             readVars: [
+             assignVars: [
                "name": <some-variable-name>;
                "scope": "suite",
                "jsonPath": <some-json-path>
@@ -71,7 +71,22 @@ The configuration has this top level structure:
 }
 ```
 
-Sequence variables and HTTP headers override those of the test suite. 
+Sequence variables and HTTP headers override those of the test suite. You can insert variables
+into most of the fields:
+
+```
+  ...
+  "endpoint": "${rootUrl}/test-something",
+  ...
+```
+
+You can also set fields to environment variables: 
+
+```
+  ...
+  "endpoint": "env=TEST_ENDPOINT",
+  ...
+```
 
 ## Run In Terminal (CLI)
 
@@ -142,7 +157,7 @@ of the following: `trace`, `info`, `warn`, `error`, `fatal`.
 
 Define validation rules in the configuration like so:
 
-```json
+```
     ...
     "checks": [
       {
@@ -168,11 +183,11 @@ For example, you may create a user in one test, then need this user's ID in the 
 
 Example:
 
-```json
+```
 {
   ...
   "response": {
-    "readVars": [
+    "assignVars": [
       {
         "name": "userId",
         "scope": "suite",

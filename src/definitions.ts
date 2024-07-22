@@ -68,7 +68,7 @@ export interface E2eTestVarAssignment {
 }
 
 export interface E2eTestResponse {
-  readVars?: E2eTestVarAssignment[];
+  assignVars?: E2eTestVarAssignment[];
   checks: ValidationCheck[];
 }
 

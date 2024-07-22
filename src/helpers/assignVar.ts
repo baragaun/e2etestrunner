@@ -8,14 +8,14 @@ const assignVar = (
   text: string | null | undefined,
   iterationIndex: number | undefined,
   vars: E2eTestVar[] | undefined,
-): void => {
+): E2eTestVar[] | undefined => {
   if (
     !varName ||
     !text ||
     !Array.isArray(vars) ||
     vars.length < 1
   ) {
-    return;
+    return vars;
   }
 
   const variable = vars.find(v => v.name === varName);
@@ -23,9 +23,10 @@ const assignVar = (
   if (!variable) {
     logger.error('assignVar: variable not found',
       { varName, text, iterationIndex });
-    return;
+    return vars;
   }
 
+  // Converting the value to the designated data type:
   let typedVal: boolean | Date | number | string | null | undefined  = text;
   if (variable.dataType === E2eVarDataType.boolean || variable.dataType === E2eVarDataType.booleanArray) {
     typedVal = parseBoolean(text);
@@ -48,7 +49,7 @@ const assignVar = (
     ) {
       logger.error('assignVar: variable is an array, but no iterationIndex given',
         { varName, text, iterationIndex, variable });
-      return;
+      return vars;
     }
 
     if (!variable.value) {
@@ -58,7 +59,7 @@ const assignVar = (
     if (!Array.isArray(variable.value)) {
       logger.error('assignVar: variable does not have a value array.',
         { varName, iterationIndex, variable });
-      return;
+      return vars;
     }
 
     if (iterationIndex < variable.value.length) {
@@ -68,15 +69,17 @@ const assignVar = (
     if (iterationIndex !== variable.value.length) {
       logger.error('assignVar: iterationIndex out of bounds.',
         { varName, iterationIndex, variable });
-      return;
+      return vars;
     }
 
     variable.value.push(typedVal);
 
-    return;
+    return vars;
   }
 
   variable.value = typedVal;
+
+  return vars;
 };
 
 export default assignVar;

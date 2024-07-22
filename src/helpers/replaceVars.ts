@@ -35,6 +35,10 @@ const replaceVars = (
     }
   }
 
+  if (newText.startsWith('env=')) {
+    return process.env[newText.substring(4)] || '';
+  }
+
   return newText;
 };
 
