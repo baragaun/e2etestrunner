@@ -1,4 +1,4 @@
-import { E2eTestType } from './enums';
+import { E2eTestType, E2eVarDataType } from './enums';
 import uuid from './helpers/uuid';
 
 export { Uuid } from './helpers/uuid';
@@ -50,7 +50,7 @@ export interface ValidationCheck {
 
 export interface E2eTestSuiteConfig {
   endpoint?: string;
-  vars: { [key: string]: string };
+  vars?: E2eTestVar[];
   headers?: { [key: string]: string };
   sequences: E2eTestSequenceConfig[];
 }
@@ -60,23 +60,31 @@ export interface E2eTestSuiteResult {
   checks: TestResult[];
 }
 
-export interface E2eTestResponseReadVarItem {
+export interface E2eTestVarAssignment {
   name: string;
   scope: 'suite' | 'sequence';
   jsonPath: string;
+  index?: number;
 }
 
 export interface E2eTestResponse {
-  readVars?: E2eTestResponseReadVarItem[];
+  readVars?: E2eTestVarAssignment[];
   checks: ValidationCheck[];
+}
+
+export interface E2eTestVar {
+  name: string;
+  dataType: E2eVarDataType;
+  value?: boolean | Date | number | string | null | undefined | (boolean | Date | number | string | null | undefined)[];
 }
 
 export interface E2eTestConfig {
   name?: string;
   type: E2eTestType;
-  vars?: { [key: string]: string };
+  vars?: E2eTestVar[];
   waitMilliSecondsBefore?: number;
   waitMilliSecondsAfter?: number;
+  repeat?: number;
   enabled?: boolean;
 }
 
@@ -94,5 +102,6 @@ export interface E2eTestSequenceConfig {
   method?: 'GET' | 'POST';
   headers?: { [key: string]: string };
   tests: E2eTestConfig[];
-  vars?: { [key: string]: string };
+  vars?: E2eTestVar[];
+  enabled?: boolean;
 }

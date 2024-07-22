@@ -21,3 +21,14 @@ export enum ServiceStatus {
   limited = 'limited',
   offline = 'offline',
 }
+
+export enum E2eVarDataType {
+  boolean = 'boolean',
+  date = 'date',
+  number = 'number',
+  string = 'string',
+  booleanArray = 'boolean[]',
+  dateArray = 'date[]',
+  numberArray = 'number[]',
+  stringArray = 'string[]',
+}

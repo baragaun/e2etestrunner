@@ -1,10 +1,11 @@
 import { TestResult, ValidationCheck } from '../definitions';
+import parseBoolean from './parseBoolean';
 
 const validateBoolean = (
   testName: string,
   stringValue: string | null | undefined,
   config: ValidationCheck,
-  targetValue: boolean | undefined,
+  targetValue: boolean | null | undefined,
 ): TestResult => {
   if (config.dataType !== 'boolean') {
     return { name: testName, passed: false, error: 'wrong-dataType' };
@@ -18,6 +19,7 @@ const validateBoolean = (
     if (config.shouldBeEmpty) {
       return { name: testName, passed: true };
     }
+
     return {
       name: testName,
       passed: false,
@@ -25,18 +27,19 @@ const validateBoolean = (
       expected: targetValue
         ? targetValue.toString()
         : config.targetBooleanValue
-          ? config.targetBooleanValue?.toString()
+          ? config.targetBooleanValue.toString()
           : 'N/A',
       found: 'empty',
     };
   }
 
-  const booleanValue = ['1', 'true', 'yes'].includes(stringValue.toLowerCase());
+  const parsedValue = parseBoolean(stringValue);
 
   if (targetValue) {
-    if (booleanValue == targetValue) {
+    if (parsedValue === targetValue) {
       return { name: testName, passed: true };
     }
+
     return {
       name: testName,
       passed: false,
@@ -50,7 +53,7 @@ const validateBoolean = (
     return { name: testName, passed: false, error: 'missing-targetBooleanValue' };
   }
 
-  if (booleanValue === config.targetBooleanValue) {
+  if (parsedValue === config.targetBooleanValue) {
     return { name: testName, passed: true };
   }
 
@@ -59,7 +62,7 @@ const validateBoolean = (
     passed: false,
     error: 'targetBooleanValue-mismatch',
     expected: config.targetBooleanValue.toString(),
-    found: booleanValue.toString(),
+    found: (parsedValue || '').toString(),
   };
 };
 
@@ -67,7 +70,7 @@ const validateDate = (
   testName: string,
   stringValue: string | null | undefined,
   config: ValidationCheck,
-  targetValue: Date | undefined,
+  targetValue: Date | null | undefined,
 ): TestResult => {
   if (config.dataType !== 'date') {
     return { name: testName, passed: false, error: 'wrong-dataType' };
@@ -140,7 +143,7 @@ const validateNumber = (
   testName: string,
   stringValue: string | null | undefined,
   config: ValidationCheck,
-  targetValue: number | undefined,
+  targetValue: number | null | undefined,
 ): TestResult => {
   if (config.dataType !== 'number') {
     return { name: testName, passed: false, error: 'wrong-dataType' };
@@ -229,7 +232,7 @@ const validateString = (
   testName: string,
   stringValue: string | null | undefined,
   config: ValidationCheck,
-  targetValue: string | undefined,
+  targetValue: string | null | undefined,
 ): TestResult => {
   if (config.dataType !== 'string') {
     return { name: testName, passed: false, error: 'wrong-dataType' };
@@ -302,7 +305,7 @@ const validJsonValue = (
   testName: string,
   stringValue: string | null | undefined,
   config: ValidationCheck,
-  targetValue: boolean | Date | number | string | undefined,
+  targetValue: boolean | Date | number | string | null | undefined,
 ): TestResult => {
   switch (config.dataType) {
     case 'boolean':
