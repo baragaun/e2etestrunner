@@ -27,7 +27,9 @@ const assignVars = (
     assignVar(
       readVar.name,
       value,
-      iterationIndex,
+      readVar.index === undefined || readVar.index === '${idx}'
+        ? iterationIndex
+        : readVar.index as number,
       readVar.scope === 'suite' ? suite.vars : sequence.vars,
     );
   });

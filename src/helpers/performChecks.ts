@@ -55,14 +55,11 @@ const performChecks = (
           continue;
         }
 
-        const varName = check.targetVar.endsWith('[idx]')
-          ? check.targetVar.substring(0, -5)
-          : check.targetVar;
-        const va = vars.find(v => v.name === varName)
+        const variable = vars.find(v => v.name === check.targetVar)
 
-        if (!va) {
+        if (!variable) {
           logger.error('BgE2ETestSuite.runJsonHttpRequest: did not find target var',
-            { check, varName });
+            { check });
           results.push({
             name: checkName,
             passed: false,
@@ -71,8 +68,12 @@ const performChecks = (
           continue;
         }
 
-        if (Array.isArray(va.value)) {
-          if ((iterationIndex || 0) > va.value.length - 1) {
+        if (Array.isArray(variable.value)) {
+          const arrayIndex = (check.index === undefined || check.index === '${idx}'
+            ? iterationIndex
+            : check.index as number) || 0;
+
+          if (arrayIndex > variable.value.length - 1) {
             logger.error('BgE2ETestSuite.runJsonHttpRequest: target var index out of bounds', { check });
             results.push({
               name: checkName,
@@ -82,11 +83,11 @@ const performChecks = (
             continue;
           }
 
-          results.push(validateValue(checkName, value, check, va.value[iterationIndex || 0]));
+          results.push(validateValue(checkName, value, check, variable.value[arrayIndex]));
           continue;
         }
 
-        results.push(validateValue(checkName, value, check, va.value));
+        results.push(validateValue(checkName, value, check, variable.value));
         continue;
       }
 

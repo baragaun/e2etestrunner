@@ -29,6 +29,7 @@ export interface ValidationCheck {
   targetVar?: string;
   shouldBeEmpty?: boolean;
   enabled?: boolean;
+  index?: number | string;
 
   // dataType = 'boolean':
   targetBooleanValue?: boolean;
@@ -64,7 +65,7 @@ export interface E2eTestVarAssignment {
   name: string;
   scope: 'suite' | 'sequence';
   jsonPath: string;
-  index?: number;
+  index?: number | string;
 }
 
 export interface E2eTestResponse {

@@ -5,25 +5,25 @@
 `e2etestrunner` runs through a sequence of end-to-end test for a service that provides an API.
 Currently, this API needs to expect JSON requests and respond with JSON, as a GraphQL API will
 do. It would be possible to extend `e2etestrunner` to handle non-JSON requests, but we at
-Baragaun have not needed that yet. For a RESTful API you'd need to extend it. 
+Baragaun have not needed that yet. For a RESTful API you'd need to extend it.
 The JSON response is validated using configurable rules and finally, `e2etestrunner` will
 list the tests as `passed` or if they failed, with the error that occurred.
 
 To define which tests to run, `e2etestrunner` is given a JS object (of type `E2eTestSuiteConfig`),
-or a JSON file that represents such an object. 
+or a JSON file that represents such an object.
 
 You can use `E2eTestConfig` as an npm package and integrate the tests into your own tool
 (as we have done with [@baragaun/servicepulse](https://github.com/baragaun/servicepulse)),
-or you can use it as a standalone tool either in the terminal as a CLI tool or as part of your 
-CI/CD pipeline. 
+or you can use it as a standalone tool either in the terminal as a CLI tool or as part of your
+CI/CD pipeline.
 
-Each E2E test places of a single HTTP request to the service you want to test, reads the 
+Each E2E test places of a single HTTP request to the service you want to test, reads the
 response from that service and verifies the response using validation rules that are defined
-in the configuration. 
+in the configuration.
 
 ## Create a E2E Test Suite Configuration
 
-The configuration can either be a JavaScript object of type 
+The configuration can either be a JavaScript object of type
 [E2eTestSuiteConfig](https://github.com/baragaun/e2etestrunner/blob/55a4b9716328556f9f7e89447bc94ce0e5a269b1/src/definitions.ts#L51)
 or a JSON with the same structure.
 
@@ -80,13 +80,95 @@ into most of the fields:
   ...
 ```
 
-You can also set fields to environment variables: 
+You can also set fields to environment variables:
 
 ```
   ...
   "endpoint": "env=TEST_ENDPOINT",
   ...
 ```
+
+### Variables
+
+Variables allow you to load data from a service and store it the test suite. For instance, you
+may create an object in one test and need that object's ID in subsquent tests. To make this object
+ID available, declare a variable either in the test suite or the sequence:
+
+```json
+{
+   "vars": [
+      {
+         "name": "objectId",
+         "datatype":  "string",
+         "value": ""
+      }
+   ]
+}
+```
+
+In the test, define a `assignVars` block:
+
+```json
+{
+   "assignVars": [
+      {
+         "name": "objectId",
+         "scope": "suite",
+         "jsonPath": "$.data.signUpUser.userId"
+      }
+   ]
+}
+```
+
+The test will read the object ID from the data using the `jsonPath` and store it in the suite's variable `objectId`.
+
+You can also define variable arrays:
+
+```json
+{
+   "vars": [
+      {
+         "name": "emails",
+         "datatype":  "string[]",
+         "value": ["bob@test.com", "mary@test.com"]
+      }
+   ]
+}
+```
+
+This is helpful for tests that have a `repeat` and are run multiple times. It can use the variable
+and each iteration will use the corresponding item from the variable's array:
+
+```json
+{
+  "checks": [
+    {
+      "name": "user.email",
+      "jsonPath": "$.data.signUpUser.email",
+      "targetVar": "emails"
+    }
+  ]
+}
+```
+
+For the second iteration, the value will be compared with `mary@test.com`. 
+
+You can specify a different index to pick an item from the array:
+
+```json
+{
+  "checks": [
+    {
+      "name": "user.email",
+      "jsonPath": "$.data.signUpUser.email",
+      "targetVar": "emails",
+      "index": 1
+    }
+  ]
+}
+```
+
+If you set the `index` to `${idx}` the index of the test iteration will be used. 
 
 ## Run In Terminal (CLI)
 
@@ -102,7 +184,7 @@ To run this tool, you have to specify the configuration JSON, or point to a file
 the configuration. You have choices to do so:
 
 1. In a JSON string in the environment variable `BG_E2E_TEST_SUITE`
-2. By specifying the path to a JSON file containing the config using environment variable 
+2. By specifying the path to a JSON file containing the config using environment variable
    `BG_E2E_TEST_SUITE_PATH`
 3. With the command line arguments `-f <path-to-json-file>`.
 
@@ -140,11 +222,11 @@ const config: E2eTestSuiteConfig = { ... };
 const suite = new BgE2eTestSuite(config);
 const result = await suite.run();
 if (!result.passed) {
-  console.error('Tests failed!');
+   console.error('Tests failed!');
 }
 ```
 
-See [@baragaun/servicepulse](https://github.com/baragaun/servicepulse/blob/main/src/services/GenericService.ts)'s 
+See [@baragaun/servicepulse](https://github.com/baragaun/servicepulse/blob/main/src/services/GenericService.ts)'s
 use of this package.
 
 ## Logging
@@ -178,8 +260,8 @@ test suite's variable `firstName`.
 The tests can share variables that you can define in the configuration. To use a variable when
 sending a HTTP request or parsing the HTTP response, insert it like this: `Name: ${fullName}`.
 
-Tests can add to the list of variables when they read data that the service sent in a response. 
-For example, you may create a user in one test, then need this user's ID in the next test. 
+Tests can add to the list of variables when they read data that the service sent in a response.
+For example, you may create a user in one test, then need this user's ID in the next test.
 
 Example:
 

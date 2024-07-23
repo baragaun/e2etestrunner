@@ -6,7 +6,7 @@ import parseBoolean from './parseBoolean';
 const assignVar = (
   varName: string,
   text: string | null | undefined,
-  iterationIndex: number | undefined,
+  arrayIndex: number | undefined,
   vars: E2eTestVar[] | undefined,
 ): E2eTestVar[] | undefined => {
   if (
@@ -22,7 +22,7 @@ const assignVar = (
 
   if (!variable) {
     logger.error('assignVar: variable not found',
-      { varName, text, iterationIndex });
+      { varName, text, arrayIndex });
     return vars;
   }
 
@@ -44,11 +44,11 @@ const assignVar = (
 
   if (isArrayDataType(variable.dataType)) {
     if (
-      (!iterationIndex && iterationIndex !== 0) ||
-      Number.isNaN(iterationIndex)
+      (!arrayIndex && arrayIndex !== 0) ||
+      Number.isNaN(arrayIndex)
     ) {
       logger.error('assignVar: variable is an array, but no iterationIndex given',
-        { varName, text, iterationIndex, variable });
+        { varName, text, arrayIndex, variable });
       return vars;
     }
 
@@ -58,17 +58,17 @@ const assignVar = (
 
     if (!Array.isArray(variable.value)) {
       logger.error('assignVar: variable does not have a value array.',
-        { varName, iterationIndex, variable });
+        { varName, arrayIndex, variable });
       return vars;
     }
 
-    if (iterationIndex < variable.value.length) {
-      variable.value[iterationIndex] = typedVal;
+    if (arrayIndex < variable.value.length) {
+      variable.value[arrayIndex] = typedVal;
     }
 
-    if (iterationIndex !== variable.value.length) {
+    if (arrayIndex !== variable.value.length) {
       logger.error('assignVar: iterationIndex out of bounds.',
-        { varName, iterationIndex, variable });
+        { varName, arrayIndex, variable });
       return vars;
     }
 
