@@ -185,7 +185,7 @@ counter:
 }
 ```
 
-The tests will see the emails as `bob-0@test.com`, `bob-1@test.com`, ...
+The tests will see the emails as `bob-1@test.com`, `bob-2@test.com`, ...
 
 ## Run In Terminal (CLI)
 
@@ -271,29 +271,3 @@ Define validation rules in the configuration like so:
 
 This verifies that the response lists the `firstName` with the value we have saved into this
 test suite's variable `firstName`.
-
-## Handling Variables
-
-The tests can share variables that you can define in the configuration. To use a variable when
-sending a HTTP request or parsing the HTTP response, insert it like this: `Name: ${fullName}`.
-
-Tests can add to the list of variables when they read data that the service sent in a response.
-For example, you may create a user in one test, then need this user's ID in the next test.
-
-Example:
-
-```
-{
-  ...
-  "response": {
-    "assignVars": [
-      {
-        "name": "userId",
-        "scope": "suite",
-        "jsonPath": "$.data.signUpUser.userId"
-      }
-    ]
-  }
-}
-```
-Here, the service responded with a `userId`, and we add this to the test suite's variable. 
