@@ -26,8 +26,8 @@ export enum E2eVarDataType {
   date = 'date',
   number = 'number',
   string = 'string',
-  booleanArray = 'boolean[]',
-  dateArray = 'date[]',
-  numberArray = 'number[]',
-  stringArray = 'string[]',
+  booleanArray = 'booleanArray',
+  dateArray = 'dateArray',
+  numberArray = 'numberArray',
+  stringArray = 'stringArray',
 }

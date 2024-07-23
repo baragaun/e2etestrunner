@@ -18,21 +18,23 @@ const replaceVars = (
 
   let newText = text;
 
-  for (const va of vars) {
+  for (const variable of vars) {
     if (
-      isArrayDataType(va.dataType) &&
+      isArrayDataType(variable.dataType) &&
       (iterationIndex || iterationIndex === 0) &&
       !Number.isNaN(iterationIndex)
     ) {
-      if (!Array.isArray(va.value) || iterationIndex > va.value.length - 1) {
-        logger.error('replaceVars: iterationIndex out of bounds', { va, iterationIndex });
-      } else {
-        const value = va.value[iterationIndex];
-        newText = newText.replace(`\${${va.name}}`, value ? value.toString() : '');
+      if (Array.isArray(variable.value) && iterationIndex < variable.value.length) {
+        const value = variable.value[iterationIndex];
+        newText = newText.replace(`\${${variable.name}}`, value ? value.toString() : '');
       }
     } else {
-      newText = newText.replace(`\${${va.name}}`, va.value ? va.value.toString() : '');
+      newText = newText.replace(`\${${variable.name}}`, variable.value ? variable.value.toString() : '');
     }
+  }
+
+  if (iterationIndex !== undefined && !Number.isNaN(iterationIndex)) {
+    newText = newText.replace(`\${idx}`, ((iterationIndex || 0) + 1).toString());
   }
 
   if (newText.startsWith('env=')) {

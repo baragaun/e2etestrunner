@@ -126,13 +126,13 @@ You can also define variable arrays:
 
 ```json
 {
-   "vars": [
-      {
-         "name": "emails",
-         "datatype":  "string[]",
-         "value": ["bob@test.com", "mary@test.com"]
-      }
-   ]
+  "vars": [
+    {
+      "name": "emails",
+      "datatype":  "stringArray",
+      "value": ["bob@test.com", "mary@test.com"]
+    }
+  ]
 }
 ```
 
@@ -168,7 +168,24 @@ You can specify a different index to pick an item from the array:
 }
 ```
 
-If you set the `index` to `${idx}` the index of the test iteration will be used. 
+If you set the `index` to `${idx}` the index of the test iteration will be used.
+
+To use the iteration counter in any values, insert `${idx}`, and it will be replaced with the 
+counter:
+
+```json
+{
+   "vars": [
+      {
+         "name": "email",
+         "datatype":  "string",
+         "value": "bob-${idx}@test.com"
+      }
+   ]
+}
+```
+
+The tests will see the emails as `bob-0@test.com`, `bob-1@test.com`, ...
 
 ## Run In Terminal (CLI)
 

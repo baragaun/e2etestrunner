@@ -10,9 +10,10 @@ import mergeVars from './helpers/mergeVars';
 export abstract class BgE2eTest {
   protected abstract runOnce(
     testName: string,
-    test: E2eTestConfig,
+    testConfig: E2eTestConfig,
     sequence: E2eTestSequenceConfig,
     suite: E2eTestSuiteConfig,
+    test: BgE2eTest,
     vars: E2eTestVar[] | undefined,
     iterationIndex: number | undefined,
     results: TestResult[],
@@ -20,19 +21,21 @@ export abstract class BgE2eTest {
 
   protected async runIteratively(
     testName: string,
-    test: E2eTestConfig,
+    testConfig: E2eTestConfig,
     sequence: E2eTestSequenceConfig,
     suite: E2eTestSuiteConfig,
+    test: BgE2eTest,
     vars: E2eTestVar[] | undefined,
     iterationIndex: number | undefined,
     results: TestResult[],
   ): Promise<TestResult[]> {
-    for (let iterationIndex = 0; iterationIndex < (test.repeat || 0); iterationIndex++) {
-      results = await this.runOnce(
+    for (let iterationIndex = 0; iterationIndex < (testConfig.repeat || 0); iterationIndex++) {
+      results = await test.runOnce(
         testName,
-        test,
+        testConfig,
         sequence,
         suite,
+        test,
         vars,
         iterationIndex,
         results,
@@ -42,62 +45,64 @@ export abstract class BgE2eTest {
   }
 
   public async run(
-    test: E2eTestConfig,
+    testConfig: E2eTestConfig,
     sequence: E2eTestSequenceConfig,
     suite: E2eTestSuiteConfig,
     results: TestResult[],
   ): Promise<TestResult[]> {
-    logger.trace('BgE2eTest.run called', { test, sequence, suite });
+    logger.trace('BgE2eTest.run called', { testConfig, sequence, suite });
 
     return new Promise((resolve, reject) => {
-      const testName = `${sequence.name}.${test.name}`;
+      const testName = `${sequence.name}.${testConfig.name}`;
       let vars: E2eTestVar[] | undefined = mergeVars(suite.vars, sequence.vars);
-      vars = mergeVars(vars, test.vars);
+      vars = mergeVars(vars, testConfig.vars);
 
-      const fnc = (!test.repeat || test.repeat === 0) ||
-        Number.isNaN(test.repeat) || test.repeat < 1
+      const fnc = (!testConfig.repeat || testConfig.repeat === 0) ||
+        Number.isNaN(testConfig.repeat) || testConfig.repeat < 1
         ? this.runOnce
         : this.runIteratively;
 
-      if (test.waitMilliSecondsBefore) {
+      if (testConfig.waitMilliSecondsBefore) {
         setTimeout(() => {
           fnc(
             testName,
-            test,
+            testConfig,
             sequence,
             suite,
+            this,
             vars,
             0,
             results,
           )
             .then((results) => {
-              if (test.waitMilliSecondsAfter) {
+              if (testConfig.waitMilliSecondsAfter) {
                 setTimeout(() => {
                   resolve(results);
-                }, test.waitMilliSecondsAfter || 2000);
+                }, testConfig.waitMilliSecondsAfter || 2000);
                 return;
               }
               resolve(results);
             }, reject);
-        }, test.waitMilliSecondsBefore);
+        }, testConfig.waitMilliSecondsBefore);
 
         return;
       }
 
       fnc(
         testName,
-        test,
+        testConfig,
         sequence,
         suite,
+        this,
         vars,
         0,
         results,
       )
         .then((results) => {
-          if (test.waitMilliSecondsAfter) {
+          if (testConfig.waitMilliSecondsAfter) {
             setTimeout(() => {
               resolve(results);
-            }, test.waitMilliSecondsAfter || 2000);
+            }, testConfig.waitMilliSecondsAfter || 2000);
             return;
           }
           resolve(results);

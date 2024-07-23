@@ -1,5 +1,6 @@
 import { BgE2eTest } from './BgE2eTest';
 import {
+  E2eTestConfig,
   E2eTestSequenceConfig,
   E2eTestSuiteConfig,
   E2eTestVar,
@@ -18,9 +19,10 @@ import performChecks from './helpers/performChecks';
 export class JsonHttpRequestE2eTest extends BgE2eTest {
   protected async runOnce(
     testName: string,
-    test: JsonHttpRequestE2eTestConfig,
+    testConfig: E2eTestConfig,
     sequence: E2eTestSequenceConfig,
     suite: E2eTestSuiteConfig,
+    test: BgE2eTest,
     vars: E2eTestVar[] | undefined,
     iterationIndex: number | undefined,
     results: TestResult[],
@@ -28,11 +30,13 @@ export class JsonHttpRequestE2eTest extends BgE2eTest {
     logger.trace('BgE2eTestSuite.runJsonHttpRequest called',
       { test, sequence, suite });
 
+    const config = testConfig as JsonHttpRequestE2eTestConfig
+
     let headers = mergeHeaders(suite.headers, sequence.headers);
-    headers = replaceVarsInObject(mergeHeaders(headers, test.headers), vars, iterationIndex);
+    headers = replaceVarsInObject(mergeHeaders(headers, config.headers), vars, iterationIndex);
 
     let url = replaceVars(
-      test.endpoint || sequence.endpoint || suite.endpoint || '',
+      config.endpoint || sequence.endpoint || suite.endpoint || '',
       vars,
       iterationIndex,
     );
@@ -42,10 +46,10 @@ export class JsonHttpRequestE2eTest extends BgE2eTest {
     }
 
     const requestConfig: HttpRequestConfig = {
-      url: replaceVars(test.endpoint || sequence.endpoint || suite.endpoint || '', vars, iterationIndex),
-      method: sequence.method || test.method,
+      url,
+      method: sequence.method || config.method,
       headers,
-      data: test.data ? replaceVars(test.data, vars, iterationIndex) : '',
+      data: config.data ? replaceVars(config.data, vars, iterationIndex) : '',
     };
 
     const { response, data, error } = await fetchJson(requestConfig);
@@ -70,9 +74,9 @@ export class JsonHttpRequestE2eTest extends BgE2eTest {
       return results;
     }
 
-    if (Array.isArray(test.response?.assignVars) && test.response?.assignVars.length > 0) {
+    if (Array.isArray(config.response?.assignVars) && config.response?.assignVars.length > 0) {
       assignVars(
-        test.response.assignVars,
+        config.response.assignVars,
         data,
         sequence,
         suite,
@@ -80,10 +84,10 @@ export class JsonHttpRequestE2eTest extends BgE2eTest {
       )
     }
 
-    if (Array.isArray(test.response?.checks) && test.response?.checks.length > 0) {
+    if (Array.isArray(config.response?.checks) && config.response?.checks.length > 0) {
       performChecks(
         testName,
-        test.response.checks,
+        config.response.checks,
         data,
         sequence,
         suite,

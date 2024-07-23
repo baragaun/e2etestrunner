@@ -1,4 +1,4 @@
-import { TestResult, ValidationCheck } from '../definitions';
+import { E2eVarDataType, TestResult, ValidationCheck } from '../definitions';
 import parseBoolean from './parseBoolean';
 
 const validateBoolean = (
@@ -7,7 +7,10 @@ const validateBoolean = (
   config: ValidationCheck,
   targetValue: boolean | null | undefined,
 ): TestResult => {
-  if (config.dataType !== 'boolean') {
+  if (
+    config.dataType !== E2eVarDataType.boolean &&
+    config.dataType !== E2eVarDataType.booleanArray
+  ) {
     return { name: testName, passed: false, error: 'wrong-dataType' };
   }
 
@@ -72,7 +75,7 @@ const validateDate = (
   config: ValidationCheck,
   targetValue: Date | null | undefined,
 ): TestResult => {
-  if (config.dataType !== 'date') {
+  if (config.dataType !== E2eVarDataType.date && config.dataType !== E2eVarDataType.dateArray) {
     return { name: testName, passed: false, error: 'wrong-dataType' };
   }
 
@@ -145,7 +148,7 @@ const validateNumber = (
   config: ValidationCheck,
   targetValue: number | null | undefined,
 ): TestResult => {
-  if (config.dataType !== 'number') {
+  if (config.dataType !== E2eVarDataType.number && config.dataType !== E2eVarDataType.numberArray) {
     return { name: testName, passed: false, error: 'wrong-dataType' };
   }
 
@@ -234,7 +237,12 @@ const validateString = (
   config: ValidationCheck,
   targetValue: string | null | undefined,
 ): TestResult => {
-  if (config.dataType !== 'string') {
+  if (
+    // The default is `string`, so if it's missing here, we assume it's a string data type.
+    config.dataType &&
+    config.dataType !== E2eVarDataType.string &&
+    config.dataType !== E2eVarDataType.stringArray
+  ) {
     return { name: testName, passed: false, error: 'wrong-dataType' };
   }
 
@@ -315,9 +323,9 @@ const validJsonValue = (
     case 'number':
       return validateNumber(testName, stringValue, config, targetValue as number);
     case 'string':
+    default:
       return validateString(testName, stringValue, config, targetValue as string);
   }
-  return { name: testName, passed: false, error: 'unknown-datatype' };
 };
 
 export default validJsonValue;

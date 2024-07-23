@@ -2,6 +2,7 @@ import {
   E2eTestSequenceConfig,
   E2eTestSuiteConfig,
   E2eTestVar,
+  E2eVarDataType,
   TestResult,
   ValidationCheck,
 } from '../definitions';
@@ -46,7 +47,7 @@ const performChecks = (
 
       if (check.targetVar) {
         // We will compare the actual value with a variable:
-        if (!Array.isArray(vars) || vars.length > 0) {
+        if (!Array.isArray(vars) || vars.length < 1) {
           results.push({
             name: testName,
             passed: false,
@@ -56,6 +57,7 @@ const performChecks = (
         }
 
         const variable = vars.find(v => v.name === check.targetVar)
+        let varVal: boolean | Date | number | string | null | undefined | (boolean | Date | number | string | null | undefined)[] = undefined;
 
         if (!variable) {
           logger.error('BgE2ETestSuite.runJsonHttpRequest: did not find target var',
@@ -83,11 +85,24 @@ const performChecks = (
             continue;
           }
 
-          results.push(validateValue(checkName, value, check, variable.value[arrayIndex]));
-          continue;
+          varVal = variable.value[arrayIndex] as string;
+        } else {
+          varVal = variable.value;
         }
 
-        results.push(validateValue(checkName, value, check, variable.value));
+        if (
+          varVal &&
+          (
+            variable.dataType === E2eVarDataType.string ||
+            variable.dataType === E2eVarDataType.stringArray
+          ) &&
+          iterationIndex !== undefined &&
+          !Number.isNaN(iterationIndex)
+        ) {
+          varVal = (varVal as string).replace(`\${idx}`, ((iterationIndex || 0) + 1).toString());
+        }
+
+        results.push(validateValue(checkName, value, check, varVal));
         continue;
       }
 

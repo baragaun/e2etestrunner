@@ -16,7 +16,7 @@
     "version": "npm run format && git add -A src",
     "postversion": "git push && git push --tags",
     "cli": "npx esrun ./src/cli.js",
-    "run": "npx esrun ./src/run.ts"
+    "esrun": "BG_E2E_TEST_SUITE_PATH=config/config.json npx esrun ./src/run.ts"
   },
   "repository": {
     "type": "git",
@@ -41,6 +41,7 @@
     "jest": "29.7.0",
     "prettier": "3.3.3",
     "ts-jest": "29.2.3",
+    "tsx": "^4.16.2",
     "typescript": "5.5.3"
   },
   "files": [

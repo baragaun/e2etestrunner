@@ -25,7 +25,7 @@ export interface TestResult {
 export interface ValidationCheck {
   name: string;
   jsonPath: string;
-  dataType: 'boolean' | 'date' | 'number' | 'string';
+  dataType: E2eVarDataType;
   targetVar?: string;
   shouldBeEmpty?: boolean;
   enabled?: boolean;
