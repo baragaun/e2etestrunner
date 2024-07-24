@@ -19,6 +19,9 @@ const replaceVars = (
   let newText = text;
 
   for (const variable of vars) {
+    const pattern = `\\$\\{${variable.name}\\}`;
+    const regExp = new RegExp(pattern, 'g')
+
     if (
       isArrayDataType(variable.dataType) &&
       (iterationIndex || iterationIndex === 0) &&
@@ -26,10 +29,10 @@ const replaceVars = (
     ) {
       if (Array.isArray(variable.value) && iterationIndex < variable.value.length) {
         const value = variable.value[iterationIndex];
-        newText = newText.replace(`\${${variable.name}}`, value ? value.toString() : '');
+        newText = newText.replace(regExp, value ? value.toString() : '');
       }
     } else {
-      newText = newText.replace(`\${${variable.name}}`, variable.value ? variable.value.toString() : '');
+      newText = newText.replace(regExp, variable.value ? variable.value.toString() : '');
     }
   }
 
