@@ -59,6 +59,8 @@ export interface E2eTestSuiteConfig {
 export interface E2eTestSuiteResult {
   passed: boolean;
   checks: TestResult[];
+  vars?: E2eTestVar[];
+  errors?: string[];
 }
 
 export interface E2eTestVarAssignment {

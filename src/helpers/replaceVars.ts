@@ -34,7 +34,7 @@ const replaceVars = (
   }
 
   if (iterationIndex !== undefined && !Number.isNaN(iterationIndex)) {
-    newText = newText.replace(`\${idx}`, ((iterationIndex || 0) + 1).toString());
+    newText = newText.replace(/\$\{idx\}/g, ((iterationIndex || 0) + 1).toString());
   }
 
   if (newText.startsWith('env=')) {

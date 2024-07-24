@@ -1,6 +1,3 @@
-// @ts-ignore
-import jsonpath from 'jsonpath';
-
 import {
   E2eTestSuiteConfig,
   E2eTestSuiteResult,
@@ -30,6 +27,27 @@ export class BgE2eTestSuite {
 
     let results: TestResult[] = [];
 
+    let preflightErrors: string[] | undefined = this.preflightConfig(this.config);
+    for (let sequenceIdx = 0; sequenceIdx < this.config.sequences.length; sequenceIdx++) {
+      const sequence = this.config.sequences[sequenceIdx];
+      if (sequence.enabled === undefined || sequence.enabled) {
+        for (let testIdx = 0; testIdx < sequence.tests.length; testIdx++) {
+          const testConfig = sequence.tests[testIdx];
+          if (testConfig.enabled === undefined || testConfig.enabled) {
+            const test = TestFactory.create(testConfig.type);
+            const errors = test.preflightConfig(testConfig);
+            if (Array.isArray(errors) && errors.length > 1) {
+              preflightErrors = preflightErrors ? preflightErrors.concat(errors) : errors;
+            }
+          }
+        }
+      }
+    }
+
+    if (Array.isArray(preflightErrors) && preflightErrors.length > 0) {
+      return { passed: false, checks: [], errors: preflightErrors, vars: this.config.vars };
+    }
+
     for (let sequenceIdx = 0; sequenceIdx < this.config.sequences.length; sequenceIdx++) {
       const sequence = this.config.sequences[sequenceIdx];
       if (sequence.enabled === undefined || sequence.enabled) {
@@ -50,6 +68,18 @@ export class BgE2eTestSuite {
 
     const passed = !results.some((r) => !r.passed);
 
-    return { passed, checks: results };
+    return { passed, checks: results, vars: this.config.vars };
+  }
+
+  public preflightConfig(config: E2eTestSuiteConfig): string[] | undefined {
+    const errors: string[] = [];
+
+    if (Array.isArray(config.vars) && config.vars.length > 0) {
+      if (config.vars.some(v => v.name === 'idx')) {
+        errors.push(`Error in suite: Invalid variable name 'idx' used.`);
+      }
+    }
+
+    return errors.length > 0 ? errors : undefined;
   }
 }

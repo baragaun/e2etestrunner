@@ -109,4 +109,16 @@ export abstract class BgE2eTest {
         }, reject);
     });
   }
+
+  public preflightConfig(testConfig: E2eTestConfig): string[] | undefined {
+    const errors: string[] = [];
+
+    if (Array.isArray(testConfig.vars) && testConfig.vars.length > 0) {
+      if (testConfig.vars.some(v => v.name === 'idx')) {
+        errors.push(`Error in test "${testConfig.name}": Invalid variable name 'idx' used.`);
+      }
+    }
+
+    return errors.length > 0 ? errors : undefined;
+  }
 }
