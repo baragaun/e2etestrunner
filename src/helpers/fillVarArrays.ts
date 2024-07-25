@@ -20,7 +20,7 @@ const fillVarArrays = (vars: E2eTestVar[]): E2eTestVar[] => {
     if (!Array.isArray(variable.value)) {
       variable.value = [];
     }
-    for (let i = 0; i < variable.fill; i++) {
+    for (let i = 0; i < (variable.fill || 0); i++) {
       variable.value.push(replaceVars(variable.fillVal as string, vars, i));
     }
   }

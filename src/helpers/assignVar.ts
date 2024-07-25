@@ -34,18 +34,16 @@ const assignVar = (
     typedVal = new Date(Date.parse(text));
   } else if (variable.dataType === E2eVarDataType.number || variable.dataType === E2eVarDataType.numberArray) {
     if (Number.isInteger(text)) {
-      typedVal = Number.parseInt(text);
-    } else if (Number.isNaN(text)) {
-      typedVal = undefined;
+      typedVal = text;
     } else {
-      typedVal = Number.parseFloat(text);
+      typedVal = Number.parseInt(text);
     }
   }
 
   if (isArrayDataType(variable.dataType)) {
     if (
       (!arrayIndex && arrayIndex !== 0) ||
-      Number.isNaN(arrayIndex)
+      isNaN(arrayIndex)
     ) {
       logger.error('assignVar: variable is an array, but no iterationIndex given',
         { varName, text, arrayIndex, variable });

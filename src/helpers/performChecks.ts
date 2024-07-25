@@ -25,7 +25,7 @@ const performChecks = (
   for (let i = 0; i < enabledChecks.length; i++) {
     const check = enabledChecks[i];
     try {
-      const checkName = Number.isNaN(iterationIndex)
+      const checkName = !Number.isInteger(iterationIndex) || isNaN(iterationIndex as number)
         ? `${testName}.${check.name}`
         : `${testName}.${check.name}[${(iterationIndex as number).toString()}]`
 
@@ -97,7 +97,7 @@ const performChecks = (
             variable.dataType === E2eVarDataType.stringArray
           ) &&
           iterationIndex !== undefined &&
-          !Number.isNaN(iterationIndex)
+          !isNaN(iterationIndex)
         ) {
           varVal = (varVal as string).replace(`\${idx}`, ((iterationIndex || 0) + 1).toString());
         }

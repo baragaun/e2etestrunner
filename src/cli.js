@@ -18,14 +18,14 @@ if (configPath) {
 
   if (!json) {
     console.error('run: failed to load config from file.', { configPath });
-    exit(1);
+    return 1;
   }
 
   try {
     config = JSON.parse(json.toString());
   } catch (error) {
     console.error('run: failed to parse config file.', { configPath, error });
-    exit(1);
+    return 1;
   }
 }
 

@@ -45,7 +45,7 @@ const replaceVars = (
     }
   }
 
-  if (iterationIndex !== undefined && !Number.isNaN(iterationIndex)) {
+  if (iterationIndex !== undefined && !isNaN(iterationIndex)) {
     newText = newText.replace(/\$\{idx\}/g, ((iterationIndex || 0) + 1).toString());
   }
 
@@ -98,7 +98,7 @@ const replaceVars = (
     if (
       isArrayDataType(variable.dataType) &&
       (iterationIndex || iterationIndex === 0) &&
-      !Number.isNaN(iterationIndex)
+      !isNaN(iterationIndex)
     ) {
       if (Array.isArray(variable.value) && iterationIndex < variable.value.length) {
         let arrayIdx = iterationIndex;
@@ -110,7 +110,7 @@ const replaceVars = (
           let idx = newText.substring(startIndexOfArrayIdx + 1);
           const endIndex = idx.indexOf(']')
           idx = idx.substring(0, endIndex)
-          if (idx !== 'idx' && !Number.isNaN(idx)) {
+          if (idx !== 'idx' && Number.isInteger(idx) && !isNaN(Number(idx))) {
             arrayIdx = Number.parseInt(idx);
           }
         }

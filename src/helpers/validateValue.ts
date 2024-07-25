@@ -14,12 +14,12 @@ const validateBoolean = (
     return { name: testName, passed: false, error: 'wrong-dataType' };
   }
 
-  if (config.shouldBeEmpty && stringValue) {
+  if (config.isEmpty && stringValue) {
     return { name: testName, passed: false, error: 'not-empty' };
   }
 
   if (!stringValue) {
-    if (config.shouldBeEmpty) {
+    if (config.isEmpty) {
       return { name: testName, passed: true };
     }
 
@@ -79,7 +79,7 @@ const validateDate = (
     return { name: testName, passed: false, error: 'wrong-dataType' };
   }
 
-  if (config.shouldBeEmpty && stringValue) {
+  if (config.isEmpty && stringValue) {
     return {
       name: testName,
       passed: false,
@@ -89,7 +89,7 @@ const validateDate = (
   }
 
   if (!stringValue) {
-    if (config.shouldBeEmpty) {
+    if (config.isEmpty) {
       return { name: testName, passed: true };
     }
     return {
@@ -152,7 +152,7 @@ const validateNumber = (
     return { name: testName, passed: false, error: 'wrong-dataType' };
   }
 
-  if (config.shouldBeEmpty && stringValue) {
+  if (config.isEmpty && stringValue) {
     return {
       name: testName,
       passed: false,
@@ -162,7 +162,7 @@ const validateNumber = (
   }
 
   if (!stringValue) {
-    if (config.shouldBeEmpty) {
+    if (config.isEmpty) {
       return { name: testName, passed: true };
     }
     return {
@@ -246,7 +246,7 @@ const validateString = (
     return { name: testName, passed: false, error: 'wrong-dataType' };
   }
 
-  if (config.shouldBeEmpty && stringValue) {
+  if (config.isEmpty && stringValue) {
     return {
       name: testName,
       passed: false,
@@ -256,7 +256,7 @@ const validateString = (
   }
 
   if (!stringValue) {
-    if (config.shouldBeEmpty) {
+    if (config.isEmpty) {
       return { name: testName, passed: true };
     }
     return {
@@ -304,6 +304,10 @@ const validateString = (
       expected: `regex: ${config.regexExpression}`,
       found: stringValue,
     };
+  }
+
+  if (config.isEmpty === false && stringValue) {
+    return { name: testName, passed: true };
   }
 
   return { name: testName, passed: false, error: 'no-test' };

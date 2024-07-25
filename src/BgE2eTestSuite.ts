@@ -1,4 +1,7 @@
+import fs from 'fs';
+
 import {
+  E2eTestConfig,
   E2eTestSuiteConfig,
   E2eTestSuiteResult, E2eTestVar,
   LogLevel,
@@ -14,6 +17,7 @@ export class BgE2eTestSuite {
 
   constructor(config: E2eTestSuiteConfig) {
     this.config = config;
+    this.resolveLinkedConfigFiles();
   }
 
   public async run(config?: E2eTestSuiteConfig, logLevel?: LogLevel): Promise<E2eTestSuiteResult> {
@@ -97,5 +101,29 @@ export class BgE2eTestSuite {
     }
 
     return errors.length > 0 ? errors : undefined;
+  }
+
+  protected resolveLinkedConfigFiles() {
+    for (let sequenceIdx = 0; sequenceIdx < this.config.sequences.length; sequenceIdx++) {
+      const sequence = this.config.sequences[sequenceIdx];
+
+      if (sequence.enabled === undefined || sequence.enabled) {
+        for (let testIdx = 0; testIdx < sequence.tests.length; testIdx++) {
+          const testConfig = sequence.tests[testIdx];
+          if (testConfig.import) {
+            let importedJson = fs.readFileSync(testConfig.import, 'utf8');
+            if (importedJson) {
+              try {
+                const importedConfig = JSON.parse(importedJson.toString()) as E2eTestConfig;
+                sequence.tests.splice(testIdx, 1, importedConfig);
+              } catch (error) {
+                logger.error('BgE2eTestSuite.resolveLinkedConfigFiles: failed to parse config file.',
+                  { path: testConfig.import, error });
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }

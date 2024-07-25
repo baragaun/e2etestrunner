@@ -5,6 +5,7 @@ import {
   E2eTestVar,
   TestResult,
 } from './definitions';
+import getRepeatCount from './helpers/getRepeatCount';
 import logger from './helpers/logger';
 
 export abstract class BgE2eTest {
@@ -29,7 +30,8 @@ export abstract class BgE2eTest {
     vars: E2eTestVar[],
     results: TestResult[],
   ): Promise<TestResult[]> {
-    for (let iterationIndex = 0; iterationIndex < (testConfig.repeat || 0); iterationIndex++) {
+    const repeatCount = getRepeatCount(testConfig, vars);
+    for (let iterationIndex = 0; iterationIndex < repeatCount || 0; iterationIndex++) {
       results = await test.runOnce(
         testName,
         testConfig,
@@ -55,9 +57,10 @@ export abstract class BgE2eTest {
 
     return new Promise((resolve, reject) => {
       const testName = `${sequence.name}.${testConfig.name}`;
+      const repeatCount = getRepeatCount(testConfig, vars);
 
-      const fnc = (!testConfig.repeat || testConfig.repeat === 0) ||
-        Number.isNaN(testConfig.repeat) || testConfig.repeat < 1
+      const fnc = (!repeatCount || repeatCount === 0) ||
+        isNaN(repeatCount) || repeatCount < 1
         ? this.runOnce
         : this.runIteratively;
 

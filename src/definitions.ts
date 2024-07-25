@@ -27,7 +27,7 @@ export interface ValidationCheck {
   jsonPath: string;
   dataType: E2eVarDataType;
   targetVar?: string;
-  shouldBeEmpty?: boolean;
+  isEmpty?: boolean;
   enabled?: boolean;
   index?: number | string;
 
@@ -85,9 +85,10 @@ export interface E2eTestVar {
 export interface E2eTestConfig {
   name?: string;
   type: E2eTestType;
+  import?: string;
   waitMilliSecondsBefore?: number;
   waitMilliSecondsAfter?: number;
-  repeat?: number;
+  repeat?: number | string;
   enabled?: boolean;
 }
 
