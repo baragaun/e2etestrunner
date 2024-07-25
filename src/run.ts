@@ -50,7 +50,7 @@ export const run = async (
   const result = await suite.run();
   logger.info('run: finished.', { result });
 
-  return JSON.stringify(result);
+  return JSON.stringify(result, undefined, 2);
 };
 
 export default run;
