@@ -50,7 +50,6 @@ The configuration has this top level structure:
            "response": {
              assignVars: [
                "name": <some-variable-name>;
-               "scope": "suite",
                "jsonPath": <some-json-path>
              ],
              "checks": [
@@ -84,7 +83,7 @@ You can also set fields to environment variables:
 
 ```
   ...
-  "endpoint": "env=TEST_ENDPOINT",
+  "endpoint": "env:TEST_ENDPOINT",
   ...
 ```
 
@@ -113,7 +112,6 @@ In the test, define a `assignVars` block:
    "assignVars": [
       {
          "name": "objectId",
-         "scope": "suite",
          "jsonPath": "$.data.signUpUser.userId"
       }
    ]
@@ -186,6 +184,50 @@ counter:
 ```
 
 The tests will see the emails as `bob-1@test.com`, `bob-2@test.com`, ...
+
+### Computed Variables
+
+In the data you are using for the tests, you can also use computed variables. The following
+are currently supported:
+
+* `idx` - the current test iteration counter, or a specified index for an array (see above)
+* `rand:word` - a random word
+* `rand:sentence` - a random sentence
+* `rand:paragraph` - a random paragraph
+* `rand:firstName` - a random first name
+* `rand:lastName` - a random last name
+* `rand:phoneNumber` - a random phone number
+* `rand:gender` - a random gender
+
+### Filling Array Variables With Computed Values
+
+If your test sequence requires an array of values for a variable, i.e. a list of UUIDs, 
+specify `fill` with the number of values you want to have generated:
+
+```json
+{
+   "name": "deviceUuids",
+   "dataType": "stringArray",
+   "value": [],
+   "fill": 10,
+   "fillVal": "${rand:uuid}"
+}
+```
+
+This will fill 10 random UUIDs into the `deviceUuids` variable.
+
+### Include Files
+
+The JSON config file can include other files. I.e., this loads the value for `data`
+from the file `config/data/createUser.json`.
+
+You can nest file includes, meaning an included file can include other files. 
+
+```json
+{
+   "data": "${file:config/data/createUser.json}"
+}
+```
 
 ## Run In Terminal (CLI)
 

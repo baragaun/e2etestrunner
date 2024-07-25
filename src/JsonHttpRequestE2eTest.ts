@@ -23,8 +23,8 @@ export class JsonHttpRequestE2eTest extends BgE2eTest {
     sequence: E2eTestSequenceConfig,
     suite: E2eTestSuiteConfig,
     test: BgE2eTest,
-    vars: E2eTestVar[] | undefined,
     iterationIndex: number | undefined,
+    vars: E2eTestVar[],
     results: TestResult[],
   ): Promise<TestResult[]> {
     logger.trace('BgE2eTestSuite.runJsonHttpRequest called',
@@ -33,7 +33,14 @@ export class JsonHttpRequestE2eTest extends BgE2eTest {
     const config = testConfig as JsonHttpRequestE2eTestConfig
 
     let headers = mergeHeaders(suite.headers, sequence.headers);
-    headers = replaceVarsInObject(mergeHeaders(headers, config.headers), vars, iterationIndex);
+    headers = replaceVarsInObject(
+      mergeHeaders(
+        headers,
+        config.headers,
+      ),
+      vars,
+      iterationIndex,
+    );
 
     let url = replaceVars(
       config.endpoint || sequence.endpoint || suite.endpoint || '',
@@ -41,7 +48,7 @@ export class JsonHttpRequestE2eTest extends BgE2eTest {
       iterationIndex,
     );
 
-    if (url.startsWith('env=')) {
+    if (url.startsWith('env:')) {
       url = process.env[url.substring(4)] || '';
     }
 
@@ -78,10 +85,9 @@ export class JsonHttpRequestE2eTest extends BgE2eTest {
       assignVars(
         config.response.assignVars,
         data,
-        sequence,
-        suite,
         iterationIndex,
-      )
+        vars,
+      );
     }
 
     if (Array.isArray(config.response?.checks) && config.response?.checks.length > 0) {
@@ -94,7 +100,7 @@ export class JsonHttpRequestE2eTest extends BgE2eTest {
         vars,
         iterationIndex,
         results,
-      )
+      );
     }
 
     return results;

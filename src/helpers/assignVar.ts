@@ -7,7 +7,7 @@ const assignVar = (
   varName: string,
   text: string | null | undefined,
   arrayIndex: number | undefined,
-  vars: E2eTestVar[] | undefined,
+  vars: E2eTestVar[],
 ): E2eTestVar[] | undefined => {
   if (
     !varName ||

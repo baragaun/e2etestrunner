@@ -51,8 +51,8 @@ export interface ValidationCheck {
 
 export interface E2eTestSuiteConfig {
   endpoint?: string;
-  vars?: E2eTestVar[];
   headers?: { [key: string]: string };
+  vars?: E2eTestVar[];
   sequences: E2eTestSequenceConfig[];
 }
 
@@ -65,7 +65,6 @@ export interface E2eTestSuiteResult {
 
 export interface E2eTestVarAssignment {
   name: string;
-  scope: 'suite' | 'sequence';
   jsonPath: string;
   index?: number | string;
 }
@@ -79,12 +78,13 @@ export interface E2eTestVar {
   name: string;
   dataType: E2eVarDataType;
   value?: boolean | Date | number | string | null | undefined | (boolean | Date | number | string | null | undefined)[];
+  fill?: number;
+  fillVal?: string;
 }
 
 export interface E2eTestConfig {
   name?: string;
   type: E2eTestType;
-  vars?: E2eTestVar[];
   waitMilliSecondsBefore?: number;
   waitMilliSecondsAfter?: number;
   repeat?: number;

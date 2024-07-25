@@ -3,7 +3,7 @@ import replaceVars from './replaceVars';
 
 const replaceVarsInObject = (
   obj: { [key: string]: string } | undefined,
-  vars: E2eTestVar[] | undefined,
+  vars: E2eTestVar[],
   iterationIndex: number | undefined,
 ): { [key: string]: string } | undefined => {
   if (

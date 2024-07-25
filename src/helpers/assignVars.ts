@@ -1,6 +1,5 @@
 import {
-  E2eTestSequenceConfig,
-  E2eTestSuiteConfig,
+  E2eTestVar,
   E2eTestVarAssignment,
 } from '../definitions';
 import logger from './logger';
@@ -10,9 +9,8 @@ import assignVar from './assignVar';
 const assignVars = (
   assignVars: E2eTestVarAssignment[],
   data: Object,
-  sequence: E2eTestSequenceConfig,
-  suite: E2eTestSuiteConfig,
   iterationIndex: number | undefined,
+  vars: E2eTestVar[],
 ): void => {
   assignVars.forEach((readVar) => {
     let value: string | undefined = undefined;
@@ -22,7 +20,7 @@ const assignVars = (
         value = values[0];
       }
     } catch (error) {
-      logger.error('BgE2eTestSuite.runJsonHttpRequest: error', { test, error });
+      logger.error('assignVars: error', { test, error });
     }
     assignVar(
       readVar.name,
@@ -30,7 +28,7 @@ const assignVars = (
       readVar.index === undefined || readVar.index === '${idx}'
         ? iterationIndex
         : readVar.index as number,
-      readVar.scope === 'suite' ? suite.vars : sequence.vars,
+      vars,
     );
   });
 }

@@ -1,11 +1,13 @@
 import {
   E2eTestSuiteConfig,
-  E2eTestSuiteResult,
+  E2eTestSuiteResult, E2eTestVar,
   LogLevel,
   TestResult,
 } from './definitions';
 import { TestFactory } from './TestFactory';
+import fillVarArrays from './helpers/fillVarArrays';
 import logger from './helpers/logger';
+import mergeVars from './helpers/mergeVars';
 
 export class BgE2eTestSuite {
   protected config: E2eTestSuiteConfig;
@@ -26,16 +28,26 @@ export class BgE2eTestSuite {
     }
 
     let results: TestResult[] = [];
-
     let preflightErrors: string[] | undefined = this.preflightConfig(this.config);
+    const suiteVars: E2eTestVar[] = this.config.vars || [];
+
     for (let sequenceIdx = 0; sequenceIdx < this.config.sequences.length; sequenceIdx++) {
       const sequence = this.config.sequences[sequenceIdx];
+
       if (sequence.enabled === undefined || sequence.enabled) {
+        const vars: E2eTestVar[] = mergeVars(suiteVars, sequence.vars);
+        fillVarArrays(vars);
+
         for (let testIdx = 0; testIdx < sequence.tests.length; testIdx++) {
           const testConfig = sequence.tests[testIdx];
           if (testConfig.enabled === undefined || testConfig.enabled) {
             const test = TestFactory.create(testConfig.type);
-            const errors = test.preflightConfig(testConfig);
+            const errors = test.preflightConfig(
+              testConfig,
+              sequence,
+              this.config,
+              vars,
+            );
             if (Array.isArray(errors) && errors.length > 1) {
               preflightErrors = preflightErrors ? preflightErrors.concat(errors) : errors;
             }
@@ -50,7 +62,10 @@ export class BgE2eTestSuite {
 
     for (let sequenceIdx = 0; sequenceIdx < this.config.sequences.length; sequenceIdx++) {
       const sequence = this.config.sequences[sequenceIdx];
+
       if (sequence.enabled === undefined || sequence.enabled) {
+        const vars: E2eTestVar[] = mergeVars(suiteVars, sequence.vars);
+
         for (let testIdx = 0; testIdx < sequence.tests.length; testIdx++) {
           const testConfig = sequence.tests[testIdx];
           if (testConfig.enabled === undefined || testConfig.enabled) {
@@ -59,6 +74,7 @@ export class BgE2eTestSuite {
               testConfig,
               sequence,
               this.config,
+              vars,
               results,
             );
           }

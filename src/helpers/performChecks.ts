@@ -16,7 +16,7 @@ const performChecks = (
   data: Object,
   sequence: E2eTestSequenceConfig,
   suite: E2eTestSuiteConfig,
-  vars: E2eTestVar[] | undefined,
+  vars: E2eTestVar[],
   iterationIndex: number | undefined,
   results: TestResult[],
 ): TestResult[] => {

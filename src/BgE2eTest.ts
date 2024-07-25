@@ -1,11 +1,11 @@
 import {
   E2eTestConfig,
   E2eTestSequenceConfig,
-  E2eTestSuiteConfig, E2eTestVar,
+  E2eTestSuiteConfig,
+  E2eTestVar,
   TestResult,
 } from './definitions';
 import logger from './helpers/logger';
-import mergeVars from './helpers/mergeVars';
 
 export abstract class BgE2eTest {
   protected abstract runOnce(
@@ -14,8 +14,8 @@ export abstract class BgE2eTest {
     sequence: E2eTestSequenceConfig,
     suite: E2eTestSuiteConfig,
     test: BgE2eTest,
-    vars: E2eTestVar[] | undefined,
     iterationIndex: number | undefined,
+    vars: E2eTestVar[],
     results: TestResult[],
   ): Promise<TestResult[]>;
 
@@ -25,8 +25,8 @@ export abstract class BgE2eTest {
     sequence: E2eTestSequenceConfig,
     suite: E2eTestSuiteConfig,
     test: BgE2eTest,
-    vars: E2eTestVar[] | undefined,
     iterationIndex: number | undefined,
+    vars: E2eTestVar[],
     results: TestResult[],
   ): Promise<TestResult[]> {
     for (let iterationIndex = 0; iterationIndex < (testConfig.repeat || 0); iterationIndex++) {
@@ -36,8 +36,8 @@ export abstract class BgE2eTest {
         sequence,
         suite,
         test,
-        vars,
         iterationIndex,
+        vars,
         results,
       );
     }
@@ -48,14 +48,13 @@ export abstract class BgE2eTest {
     testConfig: E2eTestConfig,
     sequence: E2eTestSequenceConfig,
     suite: E2eTestSuiteConfig,
+    vars: E2eTestVar[],
     results: TestResult[],
   ): Promise<TestResult[]> {
     logger.trace('BgE2eTest.run called', { testConfig, sequence, suite });
 
     return new Promise((resolve, reject) => {
       const testName = `${sequence.name}.${testConfig.name}`;
-      let vars: E2eTestVar[] | undefined = mergeVars(suite.vars, sequence.vars);
-      vars = mergeVars(vars, testConfig.vars);
 
       const fnc = (!testConfig.repeat || testConfig.repeat === 0) ||
         Number.isNaN(testConfig.repeat) || testConfig.repeat < 1
@@ -70,8 +69,8 @@ export abstract class BgE2eTest {
             sequence,
             suite,
             this,
-            vars,
             0,
+            vars,
             results,
           )
             .then((results) => {
@@ -94,8 +93,8 @@ export abstract class BgE2eTest {
         sequence,
         suite,
         this,
-        vars,
         0,
+        vars,
         results,
       )
         .then((results) => {
@@ -110,11 +109,16 @@ export abstract class BgE2eTest {
     });
   }
 
-  public preflightConfig(testConfig: E2eTestConfig): string[] | undefined {
+  public preflightConfig(
+    testConfig: E2eTestConfig,
+    sequence: E2eTestSequenceConfig,
+    suite: E2eTestSuiteConfig,
+    vars: E2eTestVar[],
+  ): string[] | undefined {
     const errors: string[] = [];
 
-    if (Array.isArray(testConfig.vars) && testConfig.vars.length > 0) {
-      if (testConfig.vars.some(v => v.name === 'idx')) {
+    if (Array.isArray(vars) && vars.length > 0) {
+      if (vars.some(v => v.name === 'idx')) {
         errors.push(`Error in test "${testConfig.name}": Invalid variable name 'idx' used.`);
       }
     }
