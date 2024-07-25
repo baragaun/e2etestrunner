@@ -70,24 +70,19 @@ The configuration has this top level structure:
 }
 ```
 
-Sequence variables and HTTP headers override those of the test suite. You can insert variables
-into most of the fields:
+### Imports
 
-```
-  ...
-  "endpoint": "${rootUrl}/test-something",
-  ...
-```
+You can move individual tests out of this json into an external JSON file like this:
 
-You can also set fields to environment variables:
-
+```json
+{ 
+   "import": "config/tests/createUsers.json"
+}
 ```
-  ...
-  "endpoint": "env:TEST_ENDPOINT",
-  ...
-```
+This will load this test's configuration from `config/tests/createUsers.json` and insert that
+test into the location of the import. 
 
-### Variables
+### Variables 
 
 Variables allow you to load data from a service and store it the test suite. For instance, you
 may create an object in one test and need that object's ID in subsquent tests. To make this object
@@ -216,7 +211,20 @@ specify `fill` with the number of values you want to have generated:
 
 This will fill 10 random UUIDs into the `deviceUuids` variable.
 
-### Include Files
+Sequence variables and HTTP headers override those of the test suite. You can insert variables
+into most of the fields:
+
+```
+  "endpoint": "${rootUrl}/test-something",
+```
+
+You can also set fields to environment variables:
+
+```
+  "endpoint": "env:TEST_ENDPOINT",
+```
+
+### Load Values From External Files
 
 The JSON config file can include other files. I.e., this loads the value for `data`
 from the file `config/data/createUser.json`.
