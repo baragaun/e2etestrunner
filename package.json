@@ -15,7 +15,7 @@
     "preversion": "npm run lint",
     "version": "npm run format && git add -A src",
     "postversion": "git push && git push --tags",
-    "cli": "npx esrun ./src/cli.js",
+    "cli": "node ./lib/cli.js",
     "esrun": "BG_E2E_TEST_SUITE_PATH=config/config.json npx esrun ./src/run.ts"
   },
   "repository": {
