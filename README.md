@@ -256,16 +256,11 @@ the configuration. You have choices to do so:
 3. With the command line arguments `-f <path-to-json-file>`.
 
 ```shell
-cd lib
-node ./cli.js -f ../config/config.json
+yarn build
+node ./lib/cli.js -f ./config/config.json
 
 # Or:
-BG_E2E_TEST_SUITE_PATH='../config/config.json' node ./cli.js
-```
-or:
-
-```shell
-npx esrun ./src/cli.js -f config/config.json
+BG_E2E_TEST_SUITE_PATH='../config/config.json' node ./lib/cli.js
 ```
 
 ## Use As NPM Package
