@@ -69,11 +69,6 @@ export interface E2eTestVarAssignment {
   index?: number | string;
 }
 
-export interface E2eTestResponse {
-  assignVars?: E2eTestVarAssignment[];
-  checks: ValidationCheck[];
-}
-
 export interface E2eTestVar {
   name: string;
   dataType: E2eVarDataType;
@@ -92,6 +87,8 @@ export interface E2eTestConfig {
   waitMilliSecondsAfter?: number;
   repeat?: number | string;
   enabled?: boolean;
+  assignVars?: E2eTestVarAssignment[];
+  checks: ValidationCheck[];
 }
 
 export interface JsonHttpRequestE2eTestConfig extends E2eTestConfig {
@@ -99,7 +96,6 @@ export interface JsonHttpRequestE2eTestConfig extends E2eTestConfig {
   method?: 'GET' | 'POST';
   headers?: { [key: string]: string };
   data?: string;
-  response: E2eTestResponse;
 }
 
 export interface E2eTestSequenceConfig {

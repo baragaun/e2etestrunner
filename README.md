@@ -47,7 +47,6 @@ The configuration has this top level structure:
            "method": 'GET' | 'POST';
            "headers": { "header5": <var5>, "header6": <var6> },
            "data": <HTTP POST body>,
-           "response": {
              assignVars: [
                "name": <some-variable-name>;
                "jsonPath": <some-json-path>
@@ -61,7 +60,7 @@ The configuration has this top level structure:
                "waitMilliSecondsBefore": 0,
                "waitMilliSecondsAfter": 2000
                "enabled": true
-              ]         
+             ]
            }
          }
        ],

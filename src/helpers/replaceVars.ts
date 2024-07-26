@@ -111,7 +111,12 @@ const replaceVars = (
           }
         }
 
-        if (arrayIdx > -1 && arrayIdx < variable.value.length) {
+        if (
+          (arrayIdx || arrayIdx === 0) &&
+          Number.isInteger(arrayIdx) &&
+          arrayIdx > -1 &&
+          arrayIdx < variable.value.length
+        ) {
           const value = variable.value[arrayIdx];
           newText = newText.replace(regExp, value ? value.toString() : '');
         }

@@ -81,19 +81,19 @@ export class JsonHttpRequestE2eTest extends BgE2eTest {
       return results;
     }
 
-    if (Array.isArray(config.response?.assignVars) && config.response?.assignVars.length > 0) {
+    if (Array.isArray(config.assignVars) && config.assignVars.length > 0) {
       assignVars(
-        config.response.assignVars,
+        config.assignVars,
         data,
         iterationIndex,
         vars,
       );
     }
 
-    if (Array.isArray(config.response?.checks) && config.response?.checks.length > 0) {
+    if (Array.isArray(config.checks) && config.checks.length > 0) {
       performChecks(
         testName,
-        config.response.checks,
+        config.checks,
         data,
         sequence,
         suite,
