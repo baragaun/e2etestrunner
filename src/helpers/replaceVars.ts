@@ -1,13 +1,9 @@
 import { v4 as uuidv4 } from 'uuid'
-import Chance from 'chance';
 import fs from 'fs';
 
 import { E2eTestVar } from '../definitions';
 import isArrayDataType from './isArrayDataType';
 import computedVars from './computedVars';
-
-// @ts-ignore
-const chance = new Chance();
 
 const replaceVars = (
   text: string,
@@ -45,7 +41,11 @@ const replaceVars = (
     }
   }
 
-  if (iterationIndex !== undefined && !isNaN(iterationIndex)) {
+  if (
+    iterationIndex !== undefined &&
+    !isNaN(iterationIndex) &&
+    newText.includes('${idx}')
+  ) {
     newText = newText.replace(/\$\{idx\}/g, ((iterationIndex || 0) + 1).toString());
   }
 
@@ -95,12 +95,8 @@ const replaceVars = (
     const pattern = `\\$\\{${variable.name}(\\[\\d*\\])*\\}`;
     const regExp = new RegExp(pattern, 'g')
 
-    if (
-      isArrayDataType(variable.dataType) &&
-      (iterationIndex || iterationIndex === 0) &&
-      !isNaN(iterationIndex)
-    ) {
-      if (Array.isArray(variable.value) && iterationIndex < variable.value.length) {
+    if (isArrayDataType(variable.dataType)) {
+      if (Array.isArray(variable.value)) {
         let arrayIdx = iterationIndex;
 
         // Reading out the array index, if it was supplied like: userId[2]
@@ -110,17 +106,24 @@ const replaceVars = (
           let idx = newText.substring(startIndexOfArrayIdx + 1);
           const endIndex = idx.indexOf(']')
           idx = idx.substring(0, endIndex)
-          if (idx !== 'idx' && Number.isInteger(idx) && !isNaN(Number(idx))) {
+          if (idx !== 'idx' && !isNaN(Number(idx))) {
             arrayIdx = Number.parseInt(idx);
           }
         }
 
-        const value = variable.value[arrayIdx];
-        newText = newText.replace(regExp, value ? value.toString() : '');
+        if (arrayIdx > -1 && arrayIdx < variable.value.length) {
+          const value = variable.value[arrayIdx];
+          newText = newText.replace(regExp, value ? value.toString() : '');
+        }
       }
     } else {
       newText = newText.replace(regExp, variable.value ? variable.value.toString() : '');
     }
+  }
+
+  // Variables can contain reference other variables:
+  if (newText.includes('${') && newText !== text) {
+    return replaceVars(newText, vars, iterationIndex);
   }
 
   return newText;

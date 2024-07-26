@@ -2,13 +2,16 @@ import fs from 'fs';
 
 import {
   E2eTestConfig,
+  E2eTestSequenceConfig,
   E2eTestSuiteConfig,
   E2eTestSuiteResult, E2eTestVar,
   LogLevel,
   TestResult,
 } from './definitions';
 import { TestFactory } from './TestFactory';
+import computeVarValues from './helpers/computeVarValues';
 import fillVarArrays from './helpers/fillVarArrays';
+import getImportVarsFromConfig from './helpers/getImportVarsFromConfig';
 import logger from './helpers/logger';
 import mergeVars from './helpers/mergeVars';
 
@@ -17,7 +20,6 @@ export class BgE2eTestSuite {
 
   constructor(config: E2eTestSuiteConfig) {
     this.config = config;
-    this.resolveLinkedConfigFiles();
   }
 
   public async run(config?: E2eTestSuiteConfig, logLevel?: LogLevel): Promise<E2eTestSuiteResult> {
@@ -35,22 +37,39 @@ export class BgE2eTestSuite {
     let preflightErrors: string[] | undefined = this.preflightConfig(this.config);
     const suiteVars: E2eTestVar[] = this.config.vars || [];
 
+    computeVarValues(suiteVars);
+    fillVarArrays(suiteVars);
+
+    const importVars = getImportVarsFromConfig(this.config);
+    computeVarValues(importVars);
+    fillVarArrays(importVars);
+
+    this.importLinkedConfigFiles();
+
     for (let sequenceIdx = 0; sequenceIdx < this.config.sequences.length; sequenceIdx++) {
       const sequence = this.config.sequences[sequenceIdx];
 
       if (sequence.enabled === undefined || sequence.enabled) {
-        const vars: E2eTestVar[] = mergeVars(suiteVars, sequence.vars);
+        let vars: E2eTestVar[] = mergeVars(suiteVars, sequence.vars);
+        computeVarValues(vars);
         fillVarArrays(vars);
 
         for (let testIdx = 0; testIdx < sequence.tests.length; testIdx++) {
           const testConfig = sequence.tests[testIdx];
           if (testConfig.enabled === undefined || testConfig.enabled) {
+            let testVars = vars;
+            if (Array.isArray(testConfig.vars) && testConfig.vars.length > 0) {
+              testVars = mergeVars(vars.slice(0), testConfig.vars);
+              computeVarValues(testVars);
+              fillVarArrays(testVars);
+            }
+
             const test = TestFactory.create(testConfig.type);
             const errors = test.preflightConfig(
               testConfig,
               sequence,
               this.config,
-              vars,
+              testVars,
             );
             if (Array.isArray(errors) && errors.length > 1) {
               preflightErrors = preflightErrors ? preflightErrors.concat(errors) : errors;
@@ -73,12 +92,19 @@ export class BgE2eTestSuite {
         for (let testIdx = 0; testIdx < sequence.tests.length; testIdx++) {
           const testConfig = sequence.tests[testIdx];
           if (testConfig.enabled === undefined || testConfig.enabled) {
+            let testVars = vars;
+            if (Array.isArray(testConfig.vars) && testConfig.vars.length > 0) {
+              testVars = mergeVars(vars.slice(0), testConfig.vars);
+              computeVarValues(testVars);
+              fillVarArrays(testVars);
+            }
+
             const test = TestFactory.create(testConfig.type);
             results = await test.run(
               testConfig,
               sequence,
               this.config,
-              vars,
+              testVars,
               results,
             );
           }
@@ -103,9 +129,30 @@ export class BgE2eTestSuite {
     return errors.length > 0 ? errors : undefined;
   }
 
-  protected resolveLinkedConfigFiles() {
+  protected importLinkedConfigFiles() {
     for (let sequenceIdx = 0; sequenceIdx < this.config.sequences.length; sequenceIdx++) {
       const sequence = this.config.sequences[sequenceIdx];
+
+      if (sequence.import) {
+        let importedJson = fs.readFileSync(sequence.import, 'utf8');
+        if (importedJson) {
+          try {
+            const importedConfig = JSON.parse(importedJson.toString()) as E2eTestSequenceConfig;
+            importedConfig.vars = mergeVars(importedConfig.vars, sequence.importVars);
+            // The parent config file overwrites the linked in config file:
+            for (const key of Object.keys(sequence)) {
+              if (key !== 'importVars') {
+                // @ts-ignore
+                importedConfig[key] = sequence[key];
+              }
+            }
+            this.config.sequences.splice(sequenceIdx, 1, importedConfig);
+          } catch (error) {
+            logger.error('BgE2eTestSuite.importLinkedConfigFiles: failed to parse config file.',
+              { path: sequence.import, error });
+          }
+        }
+      }
 
       if (sequence.enabled === undefined || sequence.enabled) {
         for (let testIdx = 0; testIdx < sequence.tests.length; testIdx++) {
@@ -115,9 +162,17 @@ export class BgE2eTestSuite {
             if (importedJson) {
               try {
                 const importedConfig = JSON.parse(importedJson.toString()) as E2eTestConfig;
+                importedConfig.vars = mergeVars(importedConfig.vars, sequence.importVars);
+                // The parent config file overwrites the linked in config file:
+                for (const key of Object.keys(testConfig)) {
+                  if (key !== 'importVars') {
+                    // @ts-ignore
+                    importedConfig[key] = testConfig[key];
+                  }
+                }
                 sequence.tests.splice(testIdx, 1, importedConfig);
               } catch (error) {
-                logger.error('BgE2eTestSuite.resolveLinkedConfigFiles: failed to parse config file.',
+                logger.error('BgE2eTestSuite.importLinkedConfigFiles: failed to parse config file.',
                   { path: testConfig.import, error });
               }
             }

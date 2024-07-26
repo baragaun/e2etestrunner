@@ -1,5 +1,4 @@
 import { E2eTestVar } from '../definitions';
-import indexOfVar from './indexOfVar';
 
 const mergeVars = (
   vars1: E2eTestVar[] | undefined,
@@ -15,7 +14,7 @@ const mergeVars = (
   const result = vars1.slice(0);
 
   for (const va of vars2.slice(0)) {
-    const idx = indexOfVar(va.name, result);
+    const idx = result.findIndex(v => v.name === va.name);
     if (idx > -1) {
       result[idx] = va;
     } else {

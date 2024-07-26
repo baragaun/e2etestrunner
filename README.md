@@ -72,7 +72,7 @@ The configuration has this top level structure:
 
 ### Imports
 
-You can move individual tests out of this json into an external JSON file like this:
+You can move individual tests or test sequences out of this json into an external JSON file like this:
 
 ```json
 { 
@@ -80,7 +80,9 @@ You can move individual tests out of this json into an external JSON file like t
 }
 ```
 This will load this test's configuration from `config/tests/createUsers.json` and insert that
-test into the location of the import. 
+test into the location of the import. The same works for sequences. Properties that are defined
+in the config file that includes the other config file are overriding the ones from the imported
+file.
 
 ### Variables 
 

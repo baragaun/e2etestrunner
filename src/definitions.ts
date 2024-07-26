@@ -86,6 +86,8 @@ export interface E2eTestConfig {
   name?: string;
   type: E2eTestType;
   import?: string;
+  importVars?: E2eTestVar[];
+  vars?: E2eTestVar[];
   waitMilliSecondsBefore?: number;
   waitMilliSecondsAfter?: number;
   repeat?: number | string;
@@ -102,6 +104,8 @@ export interface JsonHttpRequestE2eTestConfig extends E2eTestConfig {
 
 export interface E2eTestSequenceConfig {
   name: string;
+  import?: string;
+  importVars?: E2eTestVar[];
   endpoint?: string;
   method?: 'GET' | 'POST';
   headers?: { [key: string]: string };
