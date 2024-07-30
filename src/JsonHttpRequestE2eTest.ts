@@ -1,6 +1,7 @@
 import { BgE2eTest } from './BgE2eTest';
 import {
   E2eTestConfig,
+  E2eTestResponse,
   E2eTestSequenceConfig,
   E2eTestSuiteConfig,
   E2eTestVar,
@@ -25,8 +26,8 @@ export class JsonHttpRequestE2eTest extends BgE2eTest {
     test: BgE2eTest,
     iterationIndex: number | undefined,
     vars: E2eTestVar[],
-    results: TestResult[],
-  ): Promise<TestResult[]> {
+    testResponse: E2eTestResponse,
+  ): Promise<E2eTestResponse> {
     logger.trace('BgE2eTestSuite.runJsonHttpRequest called',
       { test, sequence, suite });
 
@@ -62,23 +63,23 @@ export class JsonHttpRequestE2eTest extends BgE2eTest {
     const { response, data, error } = await fetchJson(requestConfig);
 
     if (error) {
-      results.push({ name: testName, passed: false, error: `error-in-response: ${error}; data: ${data || ''}` });
-      return results;
+      testResponse.results.push({ name: testName, passed: false, error: `error-in-response: ${error}; data: ${data || ''}` });
+      return testResponse;
     }
 
     if (!response) {
-      results.push({ name: testName, passed: false, error: `error-response: empty` });
-      return results;
+      testResponse.results.push({ name: testName, passed: false, error: `error-response: empty` });
+      return testResponse;
     }
 
     if (!data) {
-      results.push({ name: testName, passed: false, error: 'no-data-in-response' });
-      return results;
+      testResponse.results.push({ name: testName, passed: false, error: 'no-data-in-response' });
+      return testResponse;
     }
 
     if (Array.isArray(data.errors) && data.errors.length > 0) {
-      results.push({ name: testName, passed: false, error: `error-response: ${data.errors.join(', ')}` });
-      return results;
+      testResponse.results.push({ name: testName, passed: false, error: `error-response: ${data.errors.join(', ')}` });
+      return testResponse;
     }
 
     if (Array.isArray(config.assignVars) && config.assignVars.length > 0) {
@@ -91,7 +92,7 @@ export class JsonHttpRequestE2eTest extends BgE2eTest {
     }
 
     if (Array.isArray(config.checks) && config.checks.length > 0) {
-      performChecks(
+      testResponse = performChecks(
         testName,
         config.checks,
         data,
@@ -99,10 +100,10 @@ export class JsonHttpRequestE2eTest extends BgE2eTest {
         suite,
         vars,
         iterationIndex,
-        results,
+        testResponse,
       );
     }
 
-    return results;
+    return testResponse;
   }
 }

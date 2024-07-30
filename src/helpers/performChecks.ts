@@ -1,4 +1,5 @@
 import {
+  E2eTestResponse,
   E2eTestSequenceConfig,
   E2eTestSuiteConfig,
   E2eTestVar,
@@ -18,8 +19,8 @@ const performChecks = (
   suite: E2eTestSuiteConfig,
   vars: E2eTestVar[],
   iterationIndex: number | undefined,
-  results: TestResult[],
-): TestResult[] => {
+  testResponse: E2eTestResponse,
+): E2eTestResponse => {
   const enabledChecks = checks.filter((check) => check.enabled === undefined || check.enabled);
 
   for (let i = 0; i < enabledChecks.length; i++) {
@@ -35,7 +36,7 @@ const performChecks = (
       if (!Array.isArray(values) || values.length !== 1) {
         logger.error('BgE2ETestSuite.runJsonHttpRequest: failed to read value from data',
           { check, checkName, data });
-        results.push({
+        testResponse.results.push({
           name: checkName,
           passed: false,
           error: 'value-not-found',
@@ -48,7 +49,7 @@ const performChecks = (
       if (check.targetVar) {
         // We will compare the actual value with a variable:
         if (!Array.isArray(vars) || vars.length < 1) {
-          results.push({
+          testResponse.results.push({
             name: testName,
             passed: false,
             error: 'no-vars-available',
@@ -62,7 +63,7 @@ const performChecks = (
         if (!variable) {
           logger.error('BgE2ETestSuite.runJsonHttpRequest: did not find target var',
             { check });
-          results.push({
+          testResponse.results.push({
             name: checkName,
             passed: false,
             error: 'var-not-found',
@@ -77,7 +78,7 @@ const performChecks = (
 
           if (arrayIndex > variable.value.length - 1) {
             logger.error('BgE2ETestSuite.runJsonHttpRequest: target var index out of bounds', { check });
-            results.push({
+            testResponse.results.push({
               name: checkName,
               passed: false,
               error: 'var-index-out-of-bounds',
@@ -102,19 +103,19 @@ const performChecks = (
           varVal = (varVal as string).replace(`\${idx}`, ((iterationIndex || 0) + 1).toString());
         }
 
-        results.push(validateValue(checkName, value, check, varVal));
+        testResponse.results.push(validateValue(checkName, value, check, varVal));
         continue;
       }
 
       // The value is not compared to a variable, but to a value defined in the check
       // itself:
-      results.push(validateValue(checkName, value, check, undefined));
+      testResponse.results.push(validateValue(checkName, value, check, undefined));
     } catch (error) {
       logger.error('BgE2eTestSuite.runJsonHttpRequest: error', { test, error });
     }
   }
 
-  return results;
+  return testResponse;
 }
 
 export default performChecks;

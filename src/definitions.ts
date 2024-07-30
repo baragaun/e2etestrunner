@@ -87,8 +87,14 @@ export interface E2eTestConfig {
   waitMilliSecondsAfter?: number;
   repeat?: number | string;
   enabled?: boolean;
+  stopIfFailed?: boolean;
+  stopOnError?: boolean;
   assignVars?: E2eTestVarAssignment[];
   checks: ValidationCheck[];
+}
+
+export interface E2eTestResponse {
+  results: TestResult[];
 }
 
 export interface JsonHttpRequestE2eTestConfig extends E2eTestConfig {

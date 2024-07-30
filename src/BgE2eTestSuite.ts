@@ -2,9 +2,11 @@ import fs from 'fs';
 
 import {
   E2eTestConfig,
+  E2eTestResponse,
   E2eTestSequenceConfig,
   E2eTestSuiteConfig,
-  E2eTestSuiteResult, E2eTestVar,
+  E2eTestSuiteResult,
+  E2eTestVar,
   LogLevel,
   TestResult,
 } from './definitions';
@@ -100,13 +102,21 @@ export class BgE2eTestSuite {
             }
 
             const test = TestFactory.create(testConfig.type);
-            results = await test.run(
+            let testResponse: E2eTestResponse = { results: [] };
+            testResponse = await test.run(
               testConfig,
               sequence,
               this.config,
               testVars,
-              results,
+              testResponse,
             );
+            results = results.concat(testResponse.results);
+            if (testConfig.stopIfFailed && testResponse.results.some((r) => !r.passed)) {
+              return { passed: false, checks: results, vars: this.config.vars };
+            }
+            if (testConfig.stopOnError && testResponse.results.some(r => r.error)) {
+              return { passed: false, checks: results, vars: this.config.vars };
+            }
           }
         }
       }

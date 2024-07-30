@@ -1,9 +1,9 @@
 import {
   E2eTestConfig,
+  E2eTestResponse,
   E2eTestSequenceConfig,
   E2eTestSuiteConfig,
   E2eTestVar,
-  TestResult,
 } from './definitions';
 import getRepeatCount from './helpers/getRepeatCount';
 import logger from './helpers/logger';
@@ -17,8 +17,8 @@ export abstract class BgE2eTest {
     test: BgE2eTest,
     iterationIndex: number | undefined,
     vars: E2eTestVar[],
-    results: TestResult[],
-  ): Promise<TestResult[]>;
+    testResponse: E2eTestResponse,
+  ): Promise<E2eTestResponse>;
 
   protected async runIteratively(
     testName: string,
@@ -28,11 +28,11 @@ export abstract class BgE2eTest {
     test: BgE2eTest,
     iterationIndex: number | undefined,
     vars: E2eTestVar[],
-    results: TestResult[],
-  ): Promise<TestResult[]> {
+    testResponse: E2eTestResponse,
+  ): Promise<E2eTestResponse> {
     const repeatCount = getRepeatCount(testConfig, vars);
     for (let iterationIndex = 0; iterationIndex < repeatCount || 0; iterationIndex++) {
-      results = await test.runOnce(
+      testResponse = await test.runOnce(
         testName,
         testConfig,
         sequence,
@@ -40,10 +40,10 @@ export abstract class BgE2eTest {
         test,
         iterationIndex,
         vars,
-        results,
+        testResponse,
       );
     }
-    return results;
+    return testResponse;
   }
 
   public async run(
@@ -51,8 +51,8 @@ export abstract class BgE2eTest {
     sequence: E2eTestSequenceConfig,
     suite: E2eTestSuiteConfig,
     vars: E2eTestVar[],
-    results: TestResult[],
-  ): Promise<TestResult[]> {
+    testResponse: E2eTestResponse,
+  ): Promise<E2eTestResponse> {
     logger.trace('BgE2eTest.run called', { testConfig, sequence, suite });
 
     return new Promise((resolve, reject) => {
@@ -74,7 +74,7 @@ export abstract class BgE2eTest {
             this,
             0,
             vars,
-            results,
+            testResponse,
           )
             .then((results) => {
               if (testConfig.waitMilliSecondsAfter) {
@@ -98,16 +98,16 @@ export abstract class BgE2eTest {
         this,
         0,
         vars,
-        results,
+        testResponse,
       )
-        .then((results) => {
+        .then((testResponse) => {
           if (testConfig.waitMilliSecondsAfter) {
             setTimeout(() => {
-              resolve(results);
+              resolve(testResponse);
             }, testConfig.waitMilliSecondsAfter || 2000);
             return;
           }
-          resolve(results);
+          resolve(testResponse);
         }, reject);
     });
   }
