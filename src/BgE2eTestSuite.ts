@@ -35,6 +35,14 @@ export class BgE2eTestSuite {
       logger.setLogLevel(logLevel);
     }
 
+    // for (let sequenceIdx = 0; sequenceIdx < this.config.sequences.length; sequenceIdx++) {
+    //   const sequence = this.config.sequences[sequenceIdx];
+    //   if (sequence.import) {
+    //
+    //   }
+    // }
+    this.importLinkedConfigFiles();
+
     let results: TestResult[] = [];
     let preflightErrors: string[] | undefined = this.preflightConfig(this.config);
     const suiteVars: E2eTestVar[] = this.config.vars || [];
@@ -45,8 +53,6 @@ export class BgE2eTestSuite {
     const importVars = getImportVarsFromConfig(this.config);
     computeVarValues(importVars);
     fillVarArrays(importVars);
-
-    this.importLinkedConfigFiles();
 
     for (let sequenceIdx = 0; sequenceIdx < this.config.sequences.length; sequenceIdx++) {
       const sequence = this.config.sequences[sequenceIdx];
@@ -102,13 +108,11 @@ export class BgE2eTestSuite {
             }
 
             const test = TestFactory.create(testConfig.type);
-            let testResponse: E2eTestResponse = { results: [] };
-            testResponse = await test.run(
+            const testResponse = await test.run(
               testConfig,
               sequence,
               this.config,
               testVars,
-              testResponse,
             );
             results = results.concat(testResponse.results);
             if (testConfig.stopIfFailed && testResponse.results.some((r) => !r.passed)) {
@@ -124,7 +128,19 @@ export class BgE2eTestSuite {
 
     const passed = !results.some((r) => !r.passed);
 
-    return { passed, checks: results, vars: this.config.vars };
+    const response: E2eTestSuiteResult = {
+      passed,
+      checks: this.config?.hidePassed === true
+        ? results.filter(r => !r.passed)
+        : results,
+      vars: this.config.vars,
+    };
+
+    if (this.config?.returnVars) {
+      response.vars = this.config.vars;
+    }
+
+    return response;
   }
 
   public preflightConfig(config: E2eTestSuiteConfig): string[] | undefined {
@@ -141,7 +157,7 @@ export class BgE2eTestSuite {
 
   protected importLinkedConfigFiles() {
     for (let sequenceIdx = 0; sequenceIdx < this.config.sequences.length; sequenceIdx++) {
-      const sequence = this.config.sequences[sequenceIdx];
+      let sequence = this.config.sequences[sequenceIdx];
 
       if (sequence.import) {
         let importedJson = fs.readFileSync(sequence.import, 'utf8');
@@ -156,7 +172,8 @@ export class BgE2eTestSuite {
                 importedConfig[key] = sequence[key];
               }
             }
-            this.config.sequences.splice(sequenceIdx, 1, importedConfig);
+            sequence = importedConfig
+            this.config.sequences.splice(sequenceIdx, 1, sequence);
           } catch (error) {
             logger.error('BgE2eTestSuite.importLinkedConfigFiles: failed to parse config file.',
               { path: sequence.import, error });

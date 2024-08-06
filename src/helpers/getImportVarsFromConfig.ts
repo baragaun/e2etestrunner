@@ -6,7 +6,11 @@ const getImportVarsFromConfig = (config: E2eTestSuiteConfig): E2eTestVar[] => {
   for (let sequenceIdx = 0; sequenceIdx < config.sequences.length; sequenceIdx++) {
     const sequence = config.sequences[sequenceIdx];
 
-    if (sequence.enabled === undefined || sequence.enabled) {
+    if (
+      (sequence.enabled === undefined || sequence.enabled) &&
+      Array.isArray(sequence.tests) &&
+      sequence.tests.length > 0
+    ) {
       for (let testIdx = 0; testIdx < sequence.tests.length; testIdx++) {
         const testConfig = sequence.tests[testIdx];
         if (Array.isArray(testConfig.importVars) && testConfig.importVars.length > 0) {

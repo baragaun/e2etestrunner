@@ -51,9 +51,9 @@ export abstract class BgE2eTest {
     sequence: E2eTestSequenceConfig,
     suite: E2eTestSuiteConfig,
     vars: E2eTestVar[],
-    testResponse: E2eTestResponse,
   ): Promise<E2eTestResponse> {
     logger.trace('BgE2eTest.run called', { testConfig, sequence, suite });
+    const testResponse: E2eTestResponse = { results: [] };
 
     return new Promise((resolve, reject) => {
       const testName = `${sequence.name}.${testConfig.name}`;

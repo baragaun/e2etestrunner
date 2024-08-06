@@ -51,9 +51,12 @@ export interface ValidationCheck {
 
 export interface E2eTestSuiteConfig {
   endpoint?: string;
+  method?: 'GET' | 'POST';
   headers?: { [key: string]: string };
   vars?: E2eTestVar[];
   sequences: E2eTestSequenceConfig[];
+  returnVars?: boolean;
+  hidePassed?: boolean;
 }
 
 export interface E2eTestSuiteResult {

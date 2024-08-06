@@ -7,7 +7,6 @@ import {
   E2eTestVar,
   HttpRequestConfig,
   JsonHttpRequestE2eTestConfig,
-  TestResult,
 } from './definitions';
 import fetchJson from './helpers/fetchJson';
 import logger from './helpers/logger';
@@ -55,7 +54,7 @@ export class JsonHttpRequestE2eTest extends BgE2eTest {
 
     const requestConfig: HttpRequestConfig = {
       url,
-      method: sequence.method || config.method,
+      method: suite.method || sequence.method || config.method,
       headers,
       data: config.data ? replaceVars(config.data, vars, iterationIndex) : '',
     };
