@@ -101,10 +101,18 @@ export interface E2eTestResponse {
 }
 
 export interface JsonHttpRequestE2eTestConfig extends E2eTestConfig {
-  endpoint: string;
+  endpoint?: string;
   method?: 'GET' | 'POST';
   headers?: { [key: string]: string };
   data?: string;
+}
+
+export interface MatchStatsE2eTestConfig extends JsonHttpRequestE2eTestConfig {
+  oldestLatestActivityAtForSearchers: string;
+  oldestLatestActivityAtForMatches: string;
+  searcherCount: number;
+  matchesCount: number;
+  maxResultCount: number;
 }
 
 export interface E2eTestSequenceConfig {
