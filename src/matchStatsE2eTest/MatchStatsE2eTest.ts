@@ -236,7 +236,7 @@ export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
     }
 
     let exportContent: string | undefined;
-    const lines: string[] = [];
+    const lines: string[] = ['User1, User2, Rank, Score'];
 
     if (!config.exportFormat || config.exportFormat === 'csv') {
       for (const search of this.userSearches) {
