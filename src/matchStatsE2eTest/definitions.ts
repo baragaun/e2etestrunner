@@ -32,7 +32,6 @@ export interface MatchStatsE2eTestConfig extends JsonHttpRequestE2eTestConfig {
   oldestLatestActivityAtForSearchers: string;
   oldestLatestActivityAtForMatches: string;
   searcherCount: number;
-  matchesCount: number;
   maxResultCount: number;
   findUsersRequestData: any;
   createMatchingEngineRequestData: any;
@@ -43,6 +42,7 @@ export interface MatchStatsE2eTestConfig extends JsonHttpRequestE2eTestConfig {
 
 export interface ResultRecord {
   userId: string;
+  rank: number;
   score: number;
 }
 

@@ -72,11 +72,13 @@ export class BgE2eTestSuite {
               fillVarArrays(testVars);
             }
 
-            const test = TestFactory.create(testConfig.type);
-            const errors = test.preflightConfig(
-              testConfig,
-              sequence,
+            const test = TestFactory.create(
+              testConfig.type,
               this.config,
+              sequence,
+              testConfig,
+            );
+            const errors = test.preflightConfig(
               testVars,
             );
             if (Array.isArray(errors) && errors.length > 1) {
@@ -107,7 +109,12 @@ export class BgE2eTestSuite {
               fillVarArrays(testVars);
             }
 
-            const test = TestFactory.create(testConfig.type);
+            const test = TestFactory.create(
+              testConfig.type,
+              this.config,
+              sequence,
+              testConfig,
+            );
             const testResponse = await test.run(
               testConfig,
               sequence,

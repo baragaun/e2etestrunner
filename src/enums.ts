@@ -1,5 +1,6 @@
 export enum E2eTestType {
   jsonHttpRequest = 'json-http-request',
+  graphqlRequest = 'graphql-request',
   matchStats = 'matching-engine-stats',
 }
 

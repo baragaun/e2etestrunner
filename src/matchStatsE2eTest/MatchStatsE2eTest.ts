@@ -1,4 +1,3 @@
-import { BgE2eTest } from '../BgE2eTest';
 import {
   CreateMatchingEngineResponseData,
   CreateUserSearchResponseData,
@@ -16,43 +15,71 @@ import {
   E2eTestSequenceConfig,
   E2eTestSuiteConfig,
   E2eTestVar,
+  E2eVarDataType,
 } from '../definitions';
-import { JsonHttpRequestE2eTest } from '../JsonHttpRequestE2eTest';
+import { GraphqlRequestE2eTest } from '../GraphqlRequestE2eTest';
 import logger from '../helpers/logger';
 
-export class MatchStatsE2eTest extends JsonHttpRequestE2eTest {
+/**
+ * Runs a set of user searches for a matching engine and saves the matching data.
+ */
+export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
   protected searcherIds: string[] | undefined;
   protected userSearches: UserSearch[] | undefined;
   protected matchingEngine: MatchingEngine | undefined;
 
+  public constructor(
+    suiteConfig: E2eTestSuiteConfig,
+    sequenceConfig: E2eTestSequenceConfig,
+    config: E2eTestConfig,
+  ) {
+    super(suiteConfig, sequenceConfig, config);
+  }
+
   protected async createMatchingEngine(
-    vars: { [key: string]: string }[],
+    vars: E2eTestVar[],
   ): Promise<void> {
     const config = this.config as MatchStatsE2eTestConfig;
 
-    const { data } = await this.sendGraphQlRequest<CreateMatchingEngineResponseData>(
+    const { data } = await this.sendRequest<CreateMatchingEngineResponseData>(
+      '',
+      0,
       config.createMatchingEngineRequestData,
       vars,
     );
+
+    if (!data) {
+      throw new Error('create-matching-engine-error');
+    }
 
     this.matchingEngine = data.createMatchingEngine;
   }
 
   protected async createUserSearch(
     searcherId: string,
-    vars: { [key: string]: string }[],
+    vars: E2eTestVar[],
   ): Promise<UserSearch> {
     const config = this.config as MatchStatsE2eTestConfig;
 
-    const { data } = await this.sendGraphQlRequest<CreateUserSearchResponseData>(
+    const { data } = await this.sendRequest<CreateUserSearchResponseData>(
+      '',
+      0,
       config.createUserSearchRequestData,
-      vars.concat([{ createdBy: searcherId }]),
+      vars.concat([{
+        name: 'createdBy',
+        dataType: E2eVarDataType.string,
+        value: searcherId
+      }]),
     );
+
+    if (!data) {
+      throw new Error('create-user-search-error');
+    }
 
     return data.createUserSearch;
   }
 
-  protected async createUserSearches(vars: { [key: string]: string }[]): Promise<void> {
+  protected async createUserSearches(vars: E2eTestVar[]): Promise<void> {
     this.searcherIds = [];
     this.userSearches = await Promise.all(
       this.searcherIds.map((searcherId) => this.createUserSearch(searcherId, vars))
@@ -60,7 +87,7 @@ export class MatchStatsE2eTest extends JsonHttpRequestE2eTest {
   }
 
   protected async deleteMatchingEngine(
-    vars: { [key: string]: string }[],
+    vars: E2eTestVar[],
   ): Promise<void> {
     const config = this.config as MatchStatsE2eTestConfig;
 
@@ -70,16 +97,22 @@ export class MatchStatsE2eTest extends JsonHttpRequestE2eTest {
       return;
     }
 
-    await this.sendGraphQlRequest<DeleteMatchingEngineResponseData>(
+    await this.sendRequest<DeleteMatchingEngineResponseData>(
+      '',
+      0,
       config.createMatchingEngineRequestData,
-      vars.concat([{ id: this.matchingEngine.id }]),
+      vars.concat([{
+        name: 'id',
+        dataType: E2eVarDataType.string,
+        value: this.matchingEngine.id
+      }]),
     );
 
     this.matchingEngine = undefined;
   }
 
   protected async deleteUserSearches(
-    vars: { [key: string]: string }[],
+    vars: E2eTestVar[],
   ): Promise<void> {
     const config = this.config as MatchStatsE2eTestConfig;
 
@@ -91,9 +124,15 @@ export class MatchStatsE2eTest extends JsonHttpRequestE2eTest {
     const clazz = this;
     await Promise.all(
       this.userSearches!.map((userSearch) => {
-        return clazz.sendGraphQlRequest<FindUserSearchResultsResponseData>(
+        return clazz.sendRequest<FindUserSearchResultsResponseData>(
+          '',
+          0,
           config.deleteUserSearchesRequestData,
-          vars.concat({ userSearchId: userSearch.id }),
+          vars.concat({
+            name: 'userSearchId',
+            dataType: E2eVarDataType.string,
+            value: userSearch.id,
+          }),
         );
       })
     );
@@ -102,7 +141,7 @@ export class MatchStatsE2eTest extends JsonHttpRequestE2eTest {
   }
 
   protected async findAllSearchResults(
-    vars: { [key: string]: string }[],
+    vars: E2eTestVar[],
   ): Promise<void> {
 
     if (!Array.isArray(this.userSearches) || this.userSearches.length < 1) {
@@ -117,13 +156,19 @@ export class MatchStatsE2eTest extends JsonHttpRequestE2eTest {
 
   protected async findSearchResult(
     userSearch: UserSearch,
-    vars: { [key: string]: string }[],
+    vars: E2eTestVar[],
   ): Promise<UserWithScore[]> {
     const config = this.config as MatchStatsE2eTestConfig;
 
-    const { data } = await this.sendGraphQlRequest<FindUserSearchResultsResponseData>(
+    const { data } = await this.sendRequest<FindUserSearchResultsResponseData>(
+      '',
+      0,
       config.findUserSearchResultsRequestData,
-      vars.concat({ userSearchId: userSearch.id }),
+      vars.concat({
+        name: 'userSearchId',
+        dataType: E2eVarDataType.string,
+        value: userSearch.id
+      }),
     );
 
     if (!Array.isArray(data) || data.length < 1) {
@@ -132,9 +177,10 @@ export class MatchStatsE2eTest extends JsonHttpRequestE2eTest {
 
     userSearch.resultRecords = [];
 
-    data.forEach((record) => {
+    data.forEach((record, index) => {
       userSearch.resultRecords!.push({
         userId: record.id,
+        rank: index,
         score: record.score,
       })
     })
@@ -143,11 +189,13 @@ export class MatchStatsE2eTest extends JsonHttpRequestE2eTest {
   }
 
   protected async findSearcherIds(
-    vars: { [key: string]: string }[],
+    vars: E2eTestVar[],
   ): Promise<void> {
     const config = this.config as MatchStatsE2eTestConfig;
 
-    const { data } = await this.sendGraphQlRequest<FindUsersResponseData>(
+    const { data } = await this.sendRequest<FindUsersResponseData>(
+      '',
+      0,
       config.findUsersRequestData,
       vars,
     );
@@ -166,7 +214,7 @@ export class MatchStatsE2eTest extends JsonHttpRequestE2eTest {
    * @param vars
    * @protected
    */
-  protected async saveResultData(vars: { [key: string]: string }[]): Promise<void> {
+  protected async saveResultData(vars: E2eTestVar[]): Promise<void> {
     // todo: save result data into file?
   }
 
@@ -175,25 +223,20 @@ export class MatchStatsE2eTest extends JsonHttpRequestE2eTest {
    * @param vars
    * @protected
    */
-  protected selectSearcherIds(vars: { [key: string]: string }[]): void {
+  protected selectSearcherIds(vars: E2eTestVar[]): void {
     // todo: this.searcherIds = chance.pickset(this.searcherIds(this.config.searcherCount);
   }
 
   protected async runOnce(
     testName: string,
-    testConfig: E2eTestConfig,
-    sequence: E2eTestSequenceConfig,
-    suite: E2eTestSuiteConfig,
-    test: BgE2eTest,
     iterationIndex: number | undefined,
     vars: E2eTestVar[],
     testResponse: E2eTestResponse,
   ): Promise<E2eTestResponse> {
-    logger.trace('BgE2eTestSuite.runJsonHttpRequest called',
-      { test, sequence, suite });
+    logger.trace('MatchStatsE2eTest.runOnce called',
+      { test: this });
 
     // const config = testConfig as MatchStatsE2eTestConfig;
-    const castedVars = vars as unknown as { [key: string]: string }[];
 
     // Steps:
     // 1. Create MatchingEngine object
@@ -205,14 +248,14 @@ export class MatchStatsE2eTest extends JsonHttpRequestE2eTest {
     // 7. Call deleteUserSearch for all searches
     // 8. Call deleteMatchingEngine
 
-    await this.createMatchingEngine(castedVars);
-    await this.findSearcherIds(castedVars);
-    this.selectSearcherIds(castedVars);
-    await this.createUserSearches(castedVars);
-    await this.findAllSearchResults(castedVars);
-    await this.deleteUserSearches(castedVars);
-    await this.deleteMatchingEngine(castedVars);
-    await this.saveResultData(castedVars);
+    await this.createMatchingEngine(vars);
+    await this.findSearcherIds(vars);
+    this.selectSearcherIds(vars);
+    await this.createUserSearches(vars);
+    await this.findAllSearchResults(vars);
+    await this.deleteUserSearches(vars);
+    await this.deleteMatchingEngine(vars);
+    await this.saveResultData(vars);
 
     return { results: [] };
   }
