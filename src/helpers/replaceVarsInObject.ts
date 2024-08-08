@@ -17,7 +17,11 @@ const replaceVarsInObject = <T = any>(
 
   Object.keys(obj).forEach((objKey) => {
     // @ts-ignore
-    obj[objKey] = replaceVars(obj[objKey], vars, iterationIndex);
+    const val = obj[objKey]
+    if (typeof val === 'string') {
+      // @ts-ignore
+      obj[objKey] = replaceVars(val, vars, iterationIndex);
+    }
   });
 
   return obj;

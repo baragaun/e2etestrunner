@@ -4,6 +4,7 @@ import fs from 'fs';
 import { E2eTestVar } from '../definitions';
 import isArrayDataType from './isArrayDataType';
 import computedVars from './computedVars';
+import logger from './logger';
 
 const replaceVars = (
   text: string,
@@ -25,19 +26,23 @@ const replaceVars = (
   while(true) {
     const pattern = `\\$\\{file:.*\\}`;
     const regExp = new RegExp(pattern)
-    const startIndex = newText.search(regExp);
-    if (startIndex < 0) {
-      break;
-    }
-    const endIndex = newText.indexOf('}', startIndex + 7);
-    const path = newText.substring(startIndex + 7, endIndex)
-    let content = fs.readFileSync(path, 'utf8');
-    if (content) {
-      content = content.replace(/[\n\r]/g, ' ');
-      content = replaceVars(content, vars, iterationIndex);
-      newText = newText.substring(0, startIndex) +
-        content +
-        newText.substring(endIndex + 1);
+    try {
+      const startIndex = newText.search(regExp);
+      if (startIndex < 0) {
+        break;
+      }
+      const endIndex = newText.indexOf('}', startIndex + 7);
+      const path = newText.substring(startIndex + 7, endIndex)
+      let content = fs.readFileSync(path, 'utf8');
+      if (content) {
+        content = content.replace(/[\n\r]/g, ' ');
+        content = replaceVars(content, vars, iterationIndex);
+        newText = newText.substring(0, startIndex) +
+          content +
+          newText.substring(endIndex + 1);
+      }
+    } catch (error) {
+      logger.error('replaceVars: error', { error })
     }
   }
 

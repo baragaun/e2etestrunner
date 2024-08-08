@@ -20,7 +20,7 @@ const assignVars = (
         value = values[0];
       }
     } catch (error) {
-      logger.error('assignVars: error', { test, error });
+      logger.error('assignVars: error', { test: this, error });
     }
     assignVar(
       readVar.name,

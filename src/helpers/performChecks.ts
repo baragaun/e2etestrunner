@@ -111,7 +111,7 @@ const performChecks = (
       // itself:
       testResponse.results.push(validateValue(checkName, value, check, undefined));
     } catch (error) {
-      logger.error('BgE2eTestSuite.runJsonHttpRequest: error', { test, error });
+      logger.error('BgE2eTestSuite.runJsonHttpRequest: error', { test: this, error });
     }
   }
 

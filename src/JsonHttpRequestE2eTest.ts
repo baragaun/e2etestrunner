@@ -33,7 +33,7 @@ export class JsonHttpRequestE2eTest extends BgE2eTest {
     testResponse: E2eTestResponse,
   ): Promise<E2eTestResponse> {
     logger.trace('BgE2eTestSuite.runJsonHttpRequest called.',
-      { test, iterationIndex, vars });
+      { test: this, iterationIndex, vars });
 
     const config = this.config as JsonHttpRequestE2eTestConfig
 

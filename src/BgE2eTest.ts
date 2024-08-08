@@ -15,7 +15,7 @@ export abstract class BgE2eTest {
   protected sequenceConfig?: E2eTestSequenceConfig;
   protected suiteConfig?: E2eTestSuiteConfig;
 
-  public constructor(
+  protected constructor(
     suiteConfig: E2eTestSuiteConfig,
     sequenceConfig: E2eTestSequenceConfig,
     config: E2eTestConfig,
@@ -57,15 +57,12 @@ export abstract class BgE2eTest {
     vars: E2eTestVar[],
   ): Promise<E2eTestResponse> {
     logger.trace('BgE2eTest.run called', { testConfig, sequence: sequenceConfig, suite: suiteConfig });
-    const config = replaceVarsInObject<MatchStatsE2eTestConfig>(
-      this.config as MatchStatsE2eTestConfig,
-      vars,
-    ) as MatchStatsE2eTestConfig;
 
     this.config = replaceVarsInObject<E2eTestConfig>(testConfig, vars);
     this.sequenceConfig = replaceVarsInObject<E2eTestSequenceConfig>(sequenceConfig, vars);
     this.suiteConfig = replaceVarsInObject<E2eTestSuiteConfig>(suiteConfig, vars);
     const testResponse: E2eTestResponse = { results: [] };
+    const test = this;
 
     return new Promise((resolve, reject) => {
       const testName = `${sequenceConfig.name}.${testConfig.name}`;
@@ -78,7 +75,7 @@ export abstract class BgE2eTest {
 
       if (testConfig.waitMilliSecondsBefore) {
         setTimeout(() => {
-          fnc(
+          fnc.bind(test)(
             testName,
             0,
             vars,
@@ -98,7 +95,7 @@ export abstract class BgE2eTest {
         return;
       }
 
-      fnc(
+      fnc.bind(test)(
         testName,
         0,
         vars,
@@ -117,8 +114,15 @@ export abstract class BgE2eTest {
   }
 
   public preflightConfig(
+    testConfig: E2eTestConfig,
+    sequenceConfig: E2eTestSequenceConfig,
+    suiteConfig: E2eTestSuiteConfig,
     vars: E2eTestVar[],
   ): string[] | undefined {
+    this.config = replaceVarsInObject<E2eTestConfig>(testConfig, vars);
+    this.sequenceConfig = replaceVarsInObject<E2eTestSequenceConfig>(sequenceConfig, vars);
+    this.suiteConfig = replaceVarsInObject<E2eTestSuiteConfig>(suiteConfig, vars);
+
     const errors: string[] = [];
 
     if (Array.isArray(vars) && vars.length > 0) {
