@@ -1,3 +1,6 @@
+import Chance from 'chance';
+import fs from 'fs';
+
 import {
   CreateMatchingEngineResponseData,
   CreateUserSearchResponseData,
@@ -19,6 +22,9 @@ import {
 } from '../definitions';
 import { GraphqlRequestE2eTest } from '../GraphqlRequestE2eTest';
 import logger from '../helpers/logger';
+
+// @ts-ignore
+const chance = new Chance();
 
 /**
  * Runs a set of user searches for a matching engine and saves the matching data.
@@ -214,8 +220,44 @@ export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
    * @param vars
    * @protected
    */
-  protected async saveResultData(vars: E2eTestVar[]): Promise<void> {
-    // todo: save result data into file?
+  protected async exportToFile(vars: E2eTestVar[]): Promise<void> {
+    const config = this.config as MatchStatsE2eTestConfig;
+
+    if (!Array.isArray(this.userSearches) || this.userSearches.length < 0) {
+      logger.warn('BgE2eTestSuite.saveResultData: this.userSearches is empty.',
+        { test: this, vars });
+      return;
+    }
+
+    if (!config.exportFilePath) {
+      logger.error('BgE2eTestSuite.saveResultData: no export file path set.',
+        { test: this, vars });
+      return;
+    }
+
+    let exportContent: string | undefined;
+    const lines: string[] = [];
+
+    if (!config.exportFormat || config.exportFormat === 'csv') {
+      for (const search of this.userSearches) {
+        if (Array.isArray(search.resultRecords)) {
+          for (const match of search.resultRecords) {
+            lines.push(`${search.searcherId}, ${match.userId}, ${match.rank}, ${match.score}`);
+          }
+        }
+      }
+      exportContent = lines.join("\n");
+    } else if (config.exportFormat === 'json') {
+      exportContent = JSON.stringify(this.userSearches, null, 2);
+    }
+
+    if (!exportContent) {
+      logger.warn('BgE2eTestSuite.saveResultData: invalid export format.',
+        { test: this, vars });
+      return;
+    }
+
+    fs.writeFileSync(config.exportFilePath, exportContent);
   }
 
   /**
@@ -224,7 +266,24 @@ export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
    * @protected
    */
   protected selectSearcherIds(vars: E2eTestVar[]): void {
-    // todo: this.searcherIds = chance.pickset(this.searcherIds(this.config.searcherCount);
+    const config = this.config as MatchStatsE2eTestConfig;
+
+    if (!Array.isArray(this.searcherIds) || this.searcherIds.length < 1) {
+      logger.error('MatchStatsE2eTest.selectSearcherIds: no searcherIds available.',
+        { test: this });
+      return;
+    }
+
+    if (!config.searcherCount || config.searcherCount < 1) {
+      logger.error('MatchStatsE2eTest.selectSearcherIds: config.searcherCount not set.',
+        { test: this });
+      return;
+    }
+
+    logger.trace('MatchStatsE2eTest.selectSearcherIds: picking a random set of searcherIds.',
+      { test: this, originalSearcherIdsCount: this.searcherIds.length });
+
+    this.searcherIds = chance.pickset(this.searcherIds, config.searcherCount);
   }
 
   protected async runOnce(
@@ -235,8 +294,6 @@ export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
   ): Promise<E2eTestResponse> {
     logger.trace('MatchStatsE2eTest.runOnce called',
       { test: this });
-
-    // const config = testConfig as MatchStatsE2eTestConfig;
 
     // Steps:
     // 1. Create MatchingEngine object
@@ -255,7 +312,7 @@ export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
     await this.findAllSearchResults(vars);
     await this.deleteUserSearches(vars);
     await this.deleteMatchingEngine(vars);
-    await this.saveResultData(vars);
+    await this.exportToFile(vars);
 
     return { results: [] };
   }

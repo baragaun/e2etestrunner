@@ -38,6 +38,8 @@ export interface MatchStatsE2eTestConfig extends JsonHttpRequestE2eTestConfig {
   createUserSearchRequestData: any;
   findUserSearchResultsRequestData: any;
   deleteUserSearchesRequestData: any;
+  exportFilePath?: string;
+  exportFormat?: 'csv' | 'json';
 }
 
 export interface ResultRecord {
