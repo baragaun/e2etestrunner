@@ -167,7 +167,7 @@ export class MatchStatsE2eTest extends JsonHttpRequestE2eTest {
    * @protected
    */
   protected async saveResultData(vars: { [key: string]: string }[]): Promise<void> {
-    // todo: save result data
+    // todo: save result data into file?
   }
 
   /**
@@ -176,7 +176,7 @@ export class MatchStatsE2eTest extends JsonHttpRequestE2eTest {
    * @protected
    */
   protected selectSearcherIds(vars: { [key: string]: string }[]): void {
-    // todo: shuffle and pick random IDs from this.searcherIds
+    // todo: this.searcherIds = chance.pickset(this.searcherIds(this.config.searcherCount);
   }
 
   protected async runOnce(
