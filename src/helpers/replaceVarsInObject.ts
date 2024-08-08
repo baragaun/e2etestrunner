@@ -1,11 +1,11 @@
 import { E2eTestVar } from '../definitions';
 import replaceVars from './replaceVars';
 
-const replaceVarsInObject = (
-  obj: { [key: string]: string } | undefined,
+const replaceVarsInObject = <T = any>(
+  obj: T | undefined,
   vars: E2eTestVar[],
-  iterationIndex: number | undefined,
-): { [key: string]: string } | undefined => {
+  iterationIndex?: number,
+): T | undefined => {
   if (
     !obj ||
     Object.keys(obj).length < 1 ||
@@ -16,6 +16,7 @@ const replaceVarsInObject = (
   }
 
   Object.keys(obj).forEach((objKey) => {
+    // @ts-ignore
     obj[objKey] = replaceVars(obj[objKey], vars, iterationIndex);
   });
 

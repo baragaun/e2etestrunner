@@ -8,7 +8,7 @@ import computedVars from './computedVars';
 const replaceVars = (
   text: string,
   vars: E2eTestVar[],
-  iterationIndex: number | undefined,
+  iterationIndex?: number,
 ): string => {
   if (
     !text ||

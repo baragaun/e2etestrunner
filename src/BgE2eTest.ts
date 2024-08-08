@@ -5,8 +5,10 @@ import {
   E2eTestSuiteConfig,
   E2eTestVar,
 } from './definitions';
+import { MatchStatsE2eTestConfig } from './matchStatsE2eTest/definitions';
 import getRepeatCount from './helpers/getRepeatCount';
 import logger from './helpers/logger';
+import replaceVarsInObject from './helpers/replaceVarsInObject';
 
 export abstract class BgE2eTest {
   protected config?: E2eTestConfig;
@@ -55,9 +57,14 @@ export abstract class BgE2eTest {
     vars: E2eTestVar[],
   ): Promise<E2eTestResponse> {
     logger.trace('BgE2eTest.run called', { testConfig, sequence: sequenceConfig, suite: suiteConfig });
-    this.config = testConfig;
-    this.sequenceConfig = sequenceConfig;
-    this.suiteConfig = suiteConfig;
+    const config = replaceVarsInObject<MatchStatsE2eTestConfig>(
+      this.config as MatchStatsE2eTestConfig,
+      vars,
+    ) as MatchStatsE2eTestConfig;
+
+    this.config = replaceVarsInObject<E2eTestConfig>(testConfig, vars);
+    this.sequenceConfig = replaceVarsInObject<E2eTestSequenceConfig>(sequenceConfig, vars);
+    this.suiteConfig = replaceVarsInObject<E2eTestSuiteConfig>(suiteConfig, vars);
     const testResponse: E2eTestResponse = { results: [] };
 
     return new Promise((resolve, reject) => {
