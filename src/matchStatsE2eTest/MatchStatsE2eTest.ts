@@ -47,14 +47,14 @@ export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
   ): Promise<void> {
     const config = this.config as MatchStatsE2eTestConfig;
 
-    const { data } = await this.sendRequest<CreateMatchingEngineResponseData>(
+    const { data, errors } = await this.sendRequest<CreateMatchingEngineResponseData>(
       '',
       0,
       config.createMatchingEngineRequestData,
       vars,
     );
 
-    if (!data) {
+    if (!data || errors) {
       throw new Error('create-matching-engine-error');
     }
 
@@ -67,7 +67,7 @@ export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
   ): Promise<UserSearch> {
     const config = this.config as MatchStatsE2eTestConfig;
 
-    const { data } = await this.sendRequest<CreateUserSearchResponseData>(
+    const { data, errors } = await this.sendRequest<CreateUserSearchResponseData>(
       '',
       0,
       config.createUserSearchRequestData,
@@ -78,7 +78,7 @@ export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
       }]),
     );
 
-    if (!data) {
+    if (!data || errors) {
       throw new Error('create-user-search-error');
     }
 
@@ -166,7 +166,7 @@ export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
   ): Promise<UserWithScore[]> {
     const config = this.config as MatchStatsE2eTestConfig;
 
-    const { data } = await this.sendRequest<FindUserSearchResultsResponseData>(
+    const { data, errors } = await this.sendRequest<FindUserSearchResultsResponseData>(
       '',
       0,
       config.findUserSearchResultsRequestData,
@@ -177,7 +177,7 @@ export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
       }),
     );
 
-    if (!Array.isArray(data) || data.length < 1) {
+    if (!Array.isArray(data) || data.length < 1 || errors) {
       return [];
     }
 
@@ -199,14 +199,14 @@ export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
   ): Promise<void> {
     const config = this.config as MatchStatsE2eTestConfig;
 
-    const { data } = await this.sendRequest<FindUsersResponseData>(
+    const { data, errors } = await this.sendRequest<FindUsersResponseData>(
       '',
       0,
       config.findUsersRequestData,
       vars,
     );
 
-    if (!Array.isArray(data) || data.length < 1) {
+    if (!Array.isArray(data) || data.length < 1 || errors) {
       logger.warn('BgE2eTestSuite.findSearcherIds: none found.',
         { test: this, vars });
       return;
