@@ -3,10 +3,15 @@ import {
   E2eTestResponse,
   E2eTestSequenceConfig,
   E2eTestSuiteConfig,
-  E2eTestVar,
+  E2eTestVar, HttpRequestConfig,
 } from './definitions';
 import getRepeatCount from './helpers/getRepeatCount';
 import logger from './helpers/logger';
+import { GraphqlResponseData, MatchStatsE2eTestConfig } from './matchStatsE2eTest/definitions';
+import fetchJson from './helpers/fetchJson';
+import mergeHeaders from './helpers/mergeHeaders';
+import replaceVars from './helpers/replaceVars';
+import replaceVarsInObject from './helpers/replaceVarsInObject';
 
 export abstract class BgE2eTest {
   protected config?: E2eTestConfig;
@@ -135,5 +140,61 @@ export abstract class BgE2eTest {
     }
 
     return errors.length > 0 ? errors : undefined;
+  }
+
+  protected async sendGraphQlRequest<TData extends GraphqlResponseData = GraphqlResponseData>(
+    body: string,
+    vars: { [key: string]: string }[],
+  ): Promise<{
+    response: Response | undefined;
+    data: TData;
+  }> {
+    const config = this.config as MatchStatsE2eTestConfig;
+    let headers = mergeHeaders(this.suiteConfig!.headers, this.sequenceConfig!.headers);
+    headers = replaceVarsInObject(
+      mergeHeaders(
+        headers,
+        config.headers,
+      ),
+      vars as unknown as E2eTestVar[],
+      0,
+    );
+
+    let url = replaceVars(
+      config.endpoint || this.sequenceConfig!.endpoint || this.suiteConfig!.endpoint || '',
+      vars as unknown as E2eTestVar[],
+      0,
+    );
+
+    if (url.startsWith('env:')) {
+      url = process.env[url.substring(4)] || '';
+    }
+
+    const requestConfig: HttpRequestConfig = {
+      url,
+      method: this.suiteConfig!.method || this.sequenceConfig!.method || config.method,
+      headers,
+      data: body ? replaceVars(body, vars as unknown as E2eTestVar[], 0) : '',
+    };
+
+    const { response, data, error } = await fetchJson<TData>(requestConfig);
+
+    if (error) {
+      throw new Error('sendGraphQlRequest.createUserSearch: error received.');
+    }
+
+    if (!data) {
+      throw new Error('sendGraphQlRequest.createUserSearch: no response data received.');
+    }
+
+    if (typeof data === 'string') {
+      throw new Error('sendGraphQlRequest.createUserSearch: response data is a string.');
+    }
+
+    if (Array.isArray(data.errors) && data.errors.length > 0) {
+      throw new Error('sendGraphQlRequest.createUserSearch: data.errors received.');
+    }
+
+    return { response, data };
   }
 }

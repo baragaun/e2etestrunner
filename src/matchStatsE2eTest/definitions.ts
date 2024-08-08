@@ -20,6 +20,10 @@ export interface FindUserSearchResultsResponseData extends GraphqlResponseData {
   findUserSearchResults: UserWithScore[];
 }
 
+export interface FindUsersResponseData extends GraphqlResponseData {
+  findUsers: User[];
+}
+
 export interface MatchingEngine {
   id: string;
 }
@@ -40,6 +44,10 @@ export interface MatchStatsE2eTestConfig extends JsonHttpRequestE2eTestConfig {
 export interface ResultRecord {
   userId: string;
   score: number;
+}
+
+export interface User {
+  id: string;
 }
 
 export interface UserSearch {
