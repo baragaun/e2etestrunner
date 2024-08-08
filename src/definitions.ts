@@ -107,14 +107,6 @@ export interface JsonHttpRequestE2eTestConfig extends E2eTestConfig {
   data?: string;
 }
 
-export interface MatchStatsE2eTestConfig extends JsonHttpRequestE2eTestConfig {
-  oldestLatestActivityAtForSearchers: string;
-  oldestLatestActivityAtForMatches: string;
-  searcherCount: number;
-  matchesCount: number;
-  maxResultCount: number;
-}
-
 export interface E2eTestSequenceConfig {
   name: string;
   import?: string;

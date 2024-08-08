@@ -1,9 +1,9 @@
 import { HttpRequestConfig } from '../definitions';
 import logger from './logger';
 
-const fetchJson = async (config: HttpRequestConfig): Promise<{
+const fetchJson = async <T = any>(config: HttpRequestConfig): Promise<{
   response: Response | undefined;
-  data?: any;
+  data?: T | string;
   error?: string;
 }> => {
   logger.trace('fetchJson called.', { config });
@@ -37,7 +37,7 @@ const fetchJson = async (config: HttpRequestConfig): Promise<{
     }
 
     try {
-      const data = await response.json();
+      const data = await response.json() as T | undefined;
       return { response, data };
     } catch (error) {
       logger.error('fetchJson: error', { config, error });

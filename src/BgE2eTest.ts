@@ -9,11 +9,15 @@ import getRepeatCount from './helpers/getRepeatCount';
 import logger from './helpers/logger';
 
 export abstract class BgE2eTest {
+  protected config?: E2eTestConfig;
+  protected sequenceConfig?: E2eTestSequenceConfig;
+  protected suiteConfig?: E2eTestSuiteConfig;
+
   protected abstract runOnce(
     testName: string,
     testConfig: E2eTestConfig,
-    sequence: E2eTestSequenceConfig,
-    suite: E2eTestSuiteConfig,
+    sequenceConfig: E2eTestSequenceConfig,
+    suiteConfig: E2eTestSuiteConfig,
     test: BgE2eTest,
     iterationIndex: number | undefined,
     vars: E2eTestVar[],
@@ -23,8 +27,8 @@ export abstract class BgE2eTest {
   protected async runIteratively(
     testName: string,
     testConfig: E2eTestConfig,
-    sequence: E2eTestSequenceConfig,
-    suite: E2eTestSuiteConfig,
+    sequenceConfig: E2eTestSequenceConfig,
+    suiteConfig: E2eTestSuiteConfig,
     test: BgE2eTest,
     iterationIndex: number | undefined,
     vars: E2eTestVar[],
@@ -35,8 +39,8 @@ export abstract class BgE2eTest {
       testResponse = await test.runOnce(
         testName,
         testConfig,
-        sequence,
-        suite,
+        sequenceConfig,
+        suiteConfig,
         test,
         iterationIndex,
         vars,
@@ -48,15 +52,19 @@ export abstract class BgE2eTest {
 
   public async run(
     testConfig: E2eTestConfig,
-    sequence: E2eTestSequenceConfig,
-    suite: E2eTestSuiteConfig,
+    sequenceConfig: E2eTestSequenceConfig,
+    suiteConfig: E2eTestSuiteConfig,
     vars: E2eTestVar[],
   ): Promise<E2eTestResponse> {
-    logger.trace('BgE2eTest.run called', { testConfig, sequence, suite });
+    logger.trace('BgE2eTest.run called', { testConfig, sequence: sequenceConfig, suite: suiteConfig });
+    this.config = testConfig;
+    this.sequenceConfig = sequenceConfig;
+    this.suiteConfig = suiteConfig;
+    this.config = testConfig;
     const testResponse: E2eTestResponse = { results: [] };
 
     return new Promise((resolve, reject) => {
-      const testName = `${sequence.name}.${testConfig.name}`;
+      const testName = `${sequenceConfig.name}.${testConfig.name}`;
       const repeatCount = getRepeatCount(testConfig, vars);
 
       const fnc = (!repeatCount || repeatCount === 0) ||
@@ -69,8 +77,8 @@ export abstract class BgE2eTest {
           fnc(
             testName,
             testConfig,
-            sequence,
-            suite,
+            sequenceConfig,
+            suiteConfig,
             this,
             0,
             vars,
@@ -93,8 +101,8 @@ export abstract class BgE2eTest {
       fnc(
         testName,
         testConfig,
-        sequence,
-        suite,
+        sequenceConfig,
+        suiteConfig,
         this,
         0,
         vars,
@@ -114,8 +122,8 @@ export abstract class BgE2eTest {
 
   public preflightConfig(
     testConfig: E2eTestConfig,
-    sequence: E2eTestSequenceConfig,
-    suite: E2eTestSuiteConfig,
+    sequenceConfig: E2eTestSequenceConfig,
+    suiteConfig: E2eTestSuiteConfig,
     vars: E2eTestVar[],
   ): string[] | undefined {
     const errors: string[] = [];
