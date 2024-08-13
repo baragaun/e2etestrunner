@@ -1,5 +1,6 @@
 import Chance from 'chance';
 import fs from 'fs';
+import Moment from 'moment/moment';
 
 import {
   CreateMatchingEngineResponseData,
@@ -71,11 +72,13 @@ export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
       '',
       0,
       config.createUserSearchRequestData,
-      vars.concat([{
-        name: 'createdBy',
-        dataType: E2eVarDataType.string,
-        value: searcherId
-      }]),
+      vars.concat([
+        {
+          name: 'createdBy',
+          dataType: E2eVarDataType.string,
+          value: searcherId
+        },
+      ]),
     );
 
     if (!data || errors) {
@@ -86,7 +89,11 @@ export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
   }
 
   protected async createUserSearches(vars: E2eTestVar[]): Promise<void> {
-    this.searcherIds = [];
+    if (!Array.isArray(this.searcherIds) || this.searcherIds.length < 1) {
+      logger.error('MatchStatsE2eTest.createUserSearches: No searcherIds.')
+      return;
+    }
+
     this.userSearches = await Promise.all(
       this.searcherIds.map((searcherId) => this.createUserSearch(searcherId, vars))
     );
@@ -95,26 +102,26 @@ export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
   protected async deleteMatchingEngine(
     vars: E2eTestVar[],
   ): Promise<void> {
-    const config = this.config as MatchStatsE2eTestConfig;
-
-    if (!this.matchingEngine) {
-      logger.warn('BgE2eTestSuite.deleteMatchingEngine: this.matchingEngine not set.',
-        { test: this, vars });
-      return;
-    }
-
-    await this.sendRequest<DeleteMatchingEngineResponseData>(
-      '',
-      0,
-      config.createMatchingEngineRequestData,
-      vars.concat([{
-        name: 'id',
-        dataType: E2eVarDataType.string,
-        value: this.matchingEngine.id
-      }]),
-    );
-
-    this.matchingEngine = undefined;
+    // const config = this.config as MatchStatsE2eTestConfig;
+    //
+    // if (!this.matchingEngine) {
+    //   logger.warn('BgE2eTestSuite.deleteMatchingEngine: this.matchingEngine not set.',
+    //     { test: this, vars });
+    //   return;
+    // }
+    //
+    // await this.sendRequest<DeleteMatchingEngineResponseData>(
+    //   '',
+    //   0,
+    //   config.deleteMatchingEngineRequestData,
+    //   vars.concat([{
+    //     name: 'id',
+    //     dataType: E2eVarDataType.string,
+    //     value: this.matchingEngine.id
+    //   }]),
+    // );
+    //
+    // this.matchingEngine = undefined;
   }
 
   protected async deleteUserSearches(
@@ -198,21 +205,27 @@ export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
     vars: E2eTestVar[],
   ): Promise<void> {
     const config = this.config as MatchStatsE2eTestConfig;
+    const latestActivityVar = config.vars!.find(c => c.name === 'oldestLatestActivityAtForSearchersInDays')
 
     const { data, errors } = await this.sendRequest<FindUsersResponseData>(
       '',
       0,
       config.findUsersRequestData,
-      vars,
+      (vars || []).concat([{
+          name: 'latestActivityAtGreaterThan',
+          dataType: E2eVarDataType.string,
+          value: Moment().subtract(latestActivityVar?.value as number || 30, 'days').toISOString(),
+        }],
+      ),
     );
 
-    if (!Array.isArray(data) || data.length < 1 || errors) {
+    if (!Array.isArray(data?.data.findUsers) || data.data.findUsers.length < 1 || errors) {
       logger.warn('BgE2eTestSuite.findSearcherIds: none found.',
         { test: this, vars });
       return;
     }
 
-    this.searcherIds = data.map(u => u.id);
+    this.searcherIds = data.data.findUsers.map(u => u.id);
   }
 
   /**
@@ -305,13 +318,13 @@ export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
     // 7. Call deleteUserSearch for all searches
     // 8. Call deleteMatchingEngine
 
-    await this.createMatchingEngine(vars);
+    // await this.createMatchingEngine(vars);
     await this.findSearcherIds(vars);
     this.selectSearcherIds(vars);
     await this.createUserSearches(vars);
     await this.findAllSearchResults(vars);
     await this.deleteUserSearches(vars);
-    await this.deleteMatchingEngine(vars);
+    // await this.deleteMatchingEngine(vars);
     await this.exportToFile(vars);
 
     return { results: [] };

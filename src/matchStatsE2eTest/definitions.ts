@@ -21,7 +21,7 @@ export interface FindUserSearchResultsResponseData extends GraphqlResponseData {
 }
 
 export interface FindUsersResponseData extends GraphqlResponseData {
-  findUsers: User[];
+  data: { findUsers: User[] };
 }
 
 export interface MatchingEngine {
@@ -29,10 +29,6 @@ export interface MatchingEngine {
 }
 
 export interface MatchStatsE2eTestConfig extends JsonHttpRequestE2eTestConfig {
-  oldestLatestActivityAtForSearchers: string;
-  oldestLatestActivityAtForMatches: string;
-  searcherCount: number;
-  maxResultCount: number;
   findUsersRequestData: any;
   createMatchingEngineRequestData: any;
   createUserSearchRequestData: any;

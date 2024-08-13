@@ -79,6 +79,9 @@ export class BgE2eTestSuite {
               testConfig,
             );
             const errors = test.preflightConfig(
+              testConfig,
+              sequence,
+              this.config,
               testVars,
             );
             if (Array.isArray(errors) && errors.length > 1) {

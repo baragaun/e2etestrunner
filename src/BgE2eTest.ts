@@ -5,7 +5,6 @@ import {
   E2eTestSuiteConfig,
   E2eTestVar,
 } from './definitions';
-import { MatchStatsE2eTestConfig } from './matchStatsE2eTest/definitions';
 import getRepeatCount from './helpers/getRepeatCount';
 import logger from './helpers/logger';
 import replaceVarsInObject from './helpers/replaceVarsInObject';

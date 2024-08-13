@@ -11,12 +11,7 @@ const replaceVars = (
   vars: E2eTestVar[],
   iterationIndex?: number,
 ): string => {
-  if (
-    !text ||
-    !vars ||
-    !Array.isArray(vars) ||
-    vars.length < 1
-  ) {
+  if (!text) {
     return text;
   }
 
@@ -94,6 +89,14 @@ const replaceVars = (
         newValue +
         newText.substring(startIndex + randVar.varName.length);
     }
+  }
+
+  if (
+    !vars ||
+    !Array.isArray(vars) ||
+    vars.length < 1
+  ) {
+    return newText;
   }
 
   for (const variable of vars) {
