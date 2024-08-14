@@ -118,5 +118,10 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+# IDEs
 .idea/
-config/
+
+# config files
+config/*
+config
+
