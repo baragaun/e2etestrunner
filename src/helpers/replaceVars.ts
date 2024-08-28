@@ -1,7 +1,7 @@
-import { v4 as uuidv4 } from 'uuid'
+import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 
-import { E2eTestVar } from '../definitions';
+import { E2eTestVar, E2eVarDataType } from '../definitions';
 import isArrayDataType from './isArrayDataType';
 import computedVars from './computedVars';
 import logger from './logger';
@@ -101,7 +101,10 @@ const replaceVars = (
 
   for (const variable of vars) {
     const pattern = `\\$\\{${variable.name}(\\[\\d*\\])*\\}`;
-    const regExp = new RegExp(pattern, 'g')
+    const regExp = new RegExp(pattern, 'g');
+
+    const patternNumber = `"\\$\\{${variable.name}(\\[\\d*\\])*\\}"`;
+    const regExpNumber = new RegExp(patternNumber, 'g');
 
     if (isArrayDataType(variable.dataType)) {
       if (Array.isArray(variable.value)) {
@@ -129,8 +132,10 @@ const replaceVars = (
           newText = newText.replace(regExp, value ? value.toString() : '');
         }
       }
-    } else {
+    } else if (variable.dataType === E2eVarDataType.string) {
       newText = newText.replace(regExp, variable.value ? variable.value.toString() : '');
+    } else if (variable.dataType === E2eVarDataType.number) {
+      newText = newText.replace(regExpNumber, variable.value ? variable.value.toString() : '');
     }
   }
 

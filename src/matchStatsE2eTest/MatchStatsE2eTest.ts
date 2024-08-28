@@ -33,7 +33,7 @@ const chance = new Chance();
 export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
   protected searcherIds: string[] | undefined;
   protected userSearches: UserSearch[] | undefined;
-  protected matchingEngine: MatchingEngine | undefined;
+  //protected matchingEngine: MatchingEngine | undefined;
 
   public constructor(
     suiteConfig: E2eTestSuiteConfig,
@@ -43,6 +43,8 @@ export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
     super(suiteConfig, sequenceConfig, config);
   }
 
+  /*
+  // todo: implement createMatchingEngine
   protected async createMatchingEngine(
     vars: E2eTestVar[],
   ): Promise<void> {
@@ -61,11 +63,12 @@ export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
 
     this.matchingEngine = data.createMatchingEngine;
   }
+  */
 
   protected async createUserSearch(
     searcherId: string,
     vars: E2eTestVar[],
-  ): Promise<UserSearch> {
+  ): Promise<any> {
     const config = this.config as MatchStatsE2eTestConfig;
 
     const { data, errors } = await this.sendRequest<CreateUserSearchResponseData>(
@@ -85,7 +88,10 @@ export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
       throw new Error('create-user-search-error');
     }
 
-    return data.createUserSearch;
+    console.log('data type: ', typeof(data));
+    const search1 = data.createUserSearch;
+    return search1;
+    //return "Hello";
   }
 
   protected async createUserSearches(vars: E2eTestVar[]): Promise<void> {
@@ -94,11 +100,28 @@ export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
       return;
     }
 
+    this.userSearches = [];
+
+    this.createUserSearch(this.searcherIds[0], vars).then((tmp) => {
+      console.log(tmp);
+    });
+
+
+    for (const searcherId of this.searcherIds) {
+      //console.log(await this.createUserSearch(searcherId, vars));
+      let temp = await this.createUserSearch(searcherId, vars);
+      this.userSearches.push(temp);
+    }
+/*
     this.userSearches = await Promise.all(
       this.searcherIds.map((searcherId) => this.createUserSearch(searcherId, vars))
     );
+
+*/
   }
 
+  /*
+  // todo: implement deleteMatchingEngine
   protected async deleteMatchingEngine(
     vars: E2eTestVar[],
   ): Promise<void> {
@@ -123,15 +146,17 @@ export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
     //
     // this.matchingEngine = undefined;
   }
+   */
 
   protected async deleteUserSearches(
     vars: E2eTestVar[],
   ): Promise<void> {
     const config = this.config as MatchStatsE2eTestConfig;
 
-    if (!Array.isArray(this.userSearches) || this.userSearches.length < 1) {
-      logger.warn('BgE2eTestSuite.deleteUserSearches: no userSearches saved.',
+    if (!this.userSearches || !Array.isArray(this.userSearches) || this.userSearches.length < 1) {
+      logger.error('BgE2eTestSuite.deleteUserSearches: no userSearches saved.',
         { test: this, vars });
+      return;
     }
 
     const clazz = this;
@@ -157,13 +182,14 @@ export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
     vars: E2eTestVar[],
   ): Promise<void> {
 
-    if (!Array.isArray(this.userSearches) || this.userSearches.length < 1) {
-      logger.warn('BgE2eTestSuite.loadAllSearchResults: no loadSearchResult saved.',
+    if (!this.userSearches || !Array.isArray(this.userSearches) || this.userSearches.length < 1) {
+      logger.error('BgE2eTestSuite.loadAllSearchResults: no loadSearchResult saved.',
         { test: this, vars });
+      return;
     }
 
     await Promise.all(
-      this.userSearches!.map((userSearch) => this.findSearchResult(userSearch, vars))
+      this.userSearches.map((userSearch) => this.findSearchResult(userSearch, vars))
     )
   }
 
@@ -287,7 +313,8 @@ export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
       return;
     }
 
-    if (!config.searcherCount || config.searcherCount < 1) {
+    const searcherCount = this.searcherIds.length;
+    if (!searcherCount || searcherCount < 1) {
       logger.error('MatchStatsE2eTest.selectSearcherIds: config.searcherCount not set.',
         { test: this });
       return;
@@ -296,7 +323,7 @@ export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
     logger.trace('MatchStatsE2eTest.selectSearcherIds: picking a random set of searcherIds.',
       { test: this, originalSearcherIdsCount: this.searcherIds.length });
 
-    this.searcherIds = chance.pickset(this.searcherIds, config.searcherCount);
+    this.searcherIds = chance.pickset(this.searcherIds, searcherCount);
   }
 
   protected async runOnce(

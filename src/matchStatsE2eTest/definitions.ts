@@ -29,13 +29,13 @@ export interface MatchingEngine {
 }
 
 export interface MatchStatsE2eTestConfig extends JsonHttpRequestE2eTestConfig {
-  findUsersRequestData: any;
-  createMatchingEngineRequestData: any;
+  //createMatchingEngineRequestData: any;
   createUserSearchRequestData: any;
-  findUserSearchResultsRequestData: any;
   deleteUserSearchesRequestData: any;
   exportFilePath?: string;
   exportFormat?: 'csv' | 'json';
+  findUserSearchResultsRequestData: any;
+  findUsersRequestData: any;
 }
 
 export interface ResultRecord {
@@ -50,8 +50,8 @@ export interface User {
 
 export interface UserSearch {
   id: string;
-  searcherId: string;
-  resultRecords: ResultRecord[] | undefined;
+  searcherId?: string;
+  resultRecords?: ResultRecord[] | undefined;
 }
 
 export interface UserWithScore {
