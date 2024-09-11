@@ -51,6 +51,7 @@
   ],
   "dependencies": {
     "@topcli/spinner": "^2.1.2",
+    "axios": "^1.7.7",
     "chance": "^1.1.12",
     "jsonpath": "^1.1.1",
     "moment": "^2.30.1",

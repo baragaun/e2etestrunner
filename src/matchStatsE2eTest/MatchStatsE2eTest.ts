@@ -1,17 +1,14 @@
 import Chance from 'chance';
 import fs from 'fs';
 import Moment from 'moment/moment';
+import replaceVars from '../helpers/replaceVars';
 
 import {
-  CreateMatchingEngineResponseData,
   CreateUserSearchResponseData,
-  DeleteMatchingEngineResponseData,
   FindUserSearchResultsResponseData,
   FindUsersResponseData,
-  MatchingEngine,
-  MatchStatsE2eTestConfig,
+  MatchStatsE2eTestConfig, ResultRecord,
   UserSearch,
-  UserWithScore,
 } from './definitions';
 import {
   E2eTestConfig,
@@ -23,6 +20,7 @@ import {
 } from '../definitions';
 import { GraphqlRequestE2eTest } from '../GraphqlRequestE2eTest';
 import logger from '../helpers/logger';
+import fetchJsonAxios from '../helpers/fetchJsonAxios';
 
 // @ts-ignore
 const chance = new Chance();
@@ -68,10 +66,11 @@ export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
   protected async createUserSearch(
     searcherId: string,
     vars: E2eTestVar[],
-  ): Promise<any> {
+  ): Promise<UserSearch> {
     const config = this.config as MatchStatsE2eTestConfig;
 
-    const { data, errors } = await this.sendRequest<CreateUserSearchResponseData>(
+    // todo: fix template type
+    const { data, errors } = await this.sendRequest<any>(
       '',
       0,
       config.createUserSearchRequestData,
@@ -88,10 +87,7 @@ export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
       throw new Error('create-user-search-error');
     }
 
-    console.log('data type: ', typeof(data));
-    const search1 = data.createUserSearch;
-    return search1;
-    //return "Hello";
+    return { id: data.data.createUserSearch.id, searcherId: searcherId } as UserSearch;
   }
 
   protected async createUserSearches(vars: E2eTestVar[]): Promise<void> {
@@ -100,28 +96,13 @@ export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
       return;
     }
 
-    this.userSearches = [];
-
-    this.createUserSearch(this.searcherIds[0], vars).then((tmp) => {
-      console.log(tmp);
-    });
-
-
-    for (const searcherId of this.searcherIds) {
-      //console.log(await this.createUserSearch(searcherId, vars));
-      let temp = await this.createUserSearch(searcherId, vars);
-      this.userSearches.push(temp);
-    }
-/*
     this.userSearches = await Promise.all(
       this.searcherIds.map((searcherId) => this.createUserSearch(searcherId, vars))
     );
-
-*/
   }
 
+  // todo: matchingEngine
   /*
-  // todo: implement deleteMatchingEngine
   protected async deleteMatchingEngine(
     vars: E2eTestVar[],
   ): Promise<void> {
@@ -148,6 +129,7 @@ export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
   }
    */
 
+  /*
   protected async deleteUserSearches(
     vars: E2eTestVar[],
   ): Promise<void> {
@@ -177,6 +159,7 @@ export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
 
     this.userSearches = undefined;
   }
+  */
 
   protected async findAllSearchResults(
     vars: E2eTestVar[],
@@ -196,9 +179,10 @@ export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
   protected async findSearchResult(
     userSearch: UserSearch,
     vars: E2eTestVar[],
-  ): Promise<UserWithScore[]> {
+  ): Promise<UserSearch> {
     const config = this.config as MatchStatsE2eTestConfig;
 
+    /*
     const { data, errors } = await this.sendRequest<FindUserSearchResultsResponseData>(
       '',
       0,
@@ -209,14 +193,33 @@ export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
         value: userSearch.id
       }),
     );
+     */
 
-    if (!Array.isArray(data) || data.length < 1 || errors) {
-      return [];
-    }
+    const { response, error } = await fetchJsonAxios({
+      method: config.method,
+      url: config.endpoint,
+      headers: config.headers,
+      data: replaceVars(config.findUserSearchResultsRequestData, vars.concat({
+        name: 'userSearchId',
+        dataType: E2eVarDataType.string,
+        value: userSearch.id
+      }))
+    })
 
     userSearch.resultRecords = [];
 
-    data.forEach((record, index) => {
+    const userSearchResults = response?.data.data.findUserSearchResults;
+
+    if (!Array.isArray(userSearchResults) || userSearchResults.length < 1 || error) {
+      logger.error('BgE2eTestSuite.findSearchResult: searchResult not found', {
+        test: this,
+        vars,
+        userSearchId: userSearch.id
+      });
+      return userSearch;
+    }
+
+    userSearchResults?.forEach((record, index) => {
       userSearch.resultRecords!.push({
         userId: record.id,
         rank: index,
@@ -224,7 +227,7 @@ export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
       })
     })
 
-    return data.findUserSearchResults;
+    return userSearch;
   }
 
   protected async findSearcherIds(
@@ -313,7 +316,8 @@ export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
       return;
     }
 
-    const searcherCount = this.searcherIds.length;
+
+    const searcherCount = this.config!.vars!.find((e) => e.name === 'searcherCount')?.value as number;
     if (!searcherCount || searcherCount < 1) {
       logger.error('MatchStatsE2eTest.selectSearcherIds: config.searcherCount not set.',
         { test: this });
@@ -350,7 +354,7 @@ export class MatchStatsE2eTest extends GraphqlRequestE2eTest {
     this.selectSearcherIds(vars);
     await this.createUserSearches(vars);
     await this.findAllSearchResults(vars);
-    await this.deleteUserSearches(vars);
+    //await this.deleteUserSearches(vars);
     // await this.deleteMatchingEngine(vars);
     await this.exportToFile(vars);
 
