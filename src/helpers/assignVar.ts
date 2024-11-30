@@ -69,8 +69,11 @@ const assignVar = (
 
     if (arrayIndex < variable.value.length) {
       variable.value[arrayIndex] = typedVal;
+      return vars;
     }
 
+    // The arrayIndex is not one of the existing elements in the array. If it
+    // is the next index, we can add the value to the array.
     if (arrayIndex !== variable.value.length) {
       logger.error('assignVar: iterationIndex out of bounds.',
         { varName, arrayIndex, variable });

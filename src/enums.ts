@@ -5,11 +5,11 @@ export enum E2eTestType {
 }
 
 export enum LogLevel {
-  'trace',
-  'info',
-  'warn',
-  'error',
-  'fatal',
+  'trace' = 'trace',
+  'info' = 'info',
+  'warn' = 'warn',
+  'error' = 'error',
+  'fatal' = 'fatal',
 }
 
 export enum ServiceType {

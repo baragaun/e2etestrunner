@@ -1,15 +1,15 @@
 const fs = require('fs');
-
 const { run } = require('./run');
 
 let config;
 let configPath = 'config/config.json';
+let logLevel = 'error';
 
-if (process.argv.length > 1) {
-  for (let i = 0; i < process.argv.length; i++) {
-    if (process.argv[i] === '-f' && i + 1 < process.argv.length) {
-      configPath = process.argv[i + 1];
-    }
+for (let i = 0; i < process.argv.length; i++) {
+  if (process.argv[i] === '-f' && i + 1 < process.argv.length) {
+    configPath = process.argv[i + 1];
+  } else if (process.argv[i] === '-l' && i + 1 < process.argv.length) {
+    logLevel = process.argv[i + 1];
   }
 }
 
@@ -30,6 +30,6 @@ if (configPath) {
 }
 
 (async() => {
-  const result = await run(config);
+  const result = await run(config, logLevel || 'error');
   console.log(result);
 })();

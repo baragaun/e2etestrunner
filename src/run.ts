@@ -47,7 +47,7 @@ export const run = async (
   }
 
   const suite = new BgE2eTestSuite(config);
-  const result = await suite.run();
+  const result = await suite.run(undefined, logLevel);
   logger.info('run: finished.', { result });
 
   return JSON.stringify(result, undefined, 2);

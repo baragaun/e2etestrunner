@@ -2,7 +2,6 @@ import fs from 'fs';
 
 import {
   E2eTestConfig,
-  E2eTestResponse,
   E2eTestSequenceConfig,
   E2eTestSuiteConfig,
   E2eTestSuiteResult,

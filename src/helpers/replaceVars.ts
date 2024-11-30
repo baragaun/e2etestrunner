@@ -99,12 +99,20 @@ const replaceVars = (
     return newText;
   }
 
-  for (const variable of vars) {
+  const replaceWithVariable = (
+    text: string,
+    variable: E2eTestVar,
+  ): { found: boolean, newText: string } => {
+    let newText = text;
     const pattern = `\\$\\{${variable.name}(\\[\\d*\\])*\\}`;
     const regExp = new RegExp(pattern, 'g');
 
     const patternNumber = `"\\$\\{${variable.name}(\\[\\d*\\])*\\}"`;
     const regExpNumber = new RegExp(patternNumber, 'g');
+
+    if (!newText.match(regExp)) {
+      return { found: false, newText };
+    }
 
     if (isArrayDataType(variable.dataType)) {
       if (Array.isArray(variable.value)) {
@@ -128,8 +136,11 @@ const replaceVars = (
           arrayIdx > -1 &&
           arrayIdx < variable.value.length
         ) {
+          const patternWithIndex = `\\$\\{${variable.name}(\\[${arrayIdx}\\])*\\}`;
+          const regExpWithIndex = new RegExp(patternWithIndex, 'g')
+
           const value = variable.value[arrayIdx];
-          newText = newText.replace(regExp, value ? value.toString() : '');
+          newText = newText.replace(regExpWithIndex, value ? value.toString() : '');
         }
       }
     } else if (variable.dataType === E2eVarDataType.string) {
@@ -137,6 +148,19 @@ const replaceVars = (
     } else if (variable.dataType === E2eVarDataType.number) {
       newText = newText.replace(regExpNumber, variable.value ? variable.value.toString() : '');
     }
+
+    return { found: newText !== text, newText };
+  }
+
+  for (const variable of vars) {
+    // `replaceWithVariable` can only replace a reference with a single array index.
+    // If `text` contains multiple references to this variable using different indexes,
+    // they have to be replaced with a separate call to `replaceWithVariable`.
+    // Example: `text = 'This is the first reference: ${userIds[0]}, now another one: ${userIds[1]}'`
+    let found = false;
+    do {
+      ({ found, newText } = replaceWithVariable(newText, variable));
+    } while (found)
   }
 
   // Variables can contain reference other variables:
