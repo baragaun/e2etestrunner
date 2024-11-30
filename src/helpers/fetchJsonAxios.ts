@@ -1,5 +1,5 @@
-import logger from './logger';
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
+import logger from './logger';
 
 const fetchJsonAxios = async <T = any>(config: AxiosRequestConfig): Promise<{
   response: AxiosResponse | undefined;

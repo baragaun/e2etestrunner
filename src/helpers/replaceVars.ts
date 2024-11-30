@@ -107,9 +107,6 @@ const replaceVars = (
     const pattern = `\\$\\{${variable.name}(\\[\\d*\\])*\\}`;
     const regExp = new RegExp(pattern, 'g');
 
-    const patternNumber = `"\\$\\{${variable.name}(\\[\\d*\\])*\\}"`;
-    const regExpNumber = new RegExp(patternNumber, 'g');
-
     if (!newText.match(regExp)) {
       return { found: false, newText };
     }
@@ -143,10 +140,8 @@ const replaceVars = (
           newText = newText.replace(regExpWithIndex, value ? value.toString() : '');
         }
       }
-    } else if (variable.dataType === E2eVarDataType.string) {
+    } else {
       newText = newText.replace(regExp, variable.value ? variable.value.toString() : '');
-    } else if (variable.dataType === E2eVarDataType.number) {
-      newText = newText.replace(regExpNumber, variable.value ? variable.value.toString() : '');
     }
 
     return { found: newText !== text, newText };
