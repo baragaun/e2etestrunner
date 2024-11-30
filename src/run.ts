@@ -11,7 +11,7 @@ export const run = async (
   if (logLevel) {
     logger.setLogLevel(logLevel);
   } else if (process.env.BG_E2E_LOG_LEVEL) {
-    logger.setLogLevel(process.env.BG_E2E_LOG_LEVEL)
+    logger.setLogLevel(process.env.BG_E2E_LOG_LEVEL as LogLevel)
   }
 
   if (!config && process.env.BG_E2E_TEST_SUITE) {

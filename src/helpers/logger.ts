@@ -15,15 +15,7 @@ const log = (level: LogLevel, message: string, data?: Object) => {
 }
 
 const logger = {
-  setLogLevel: (level: LogLevel | string) => {
-    if (typeof level === 'string') {
-      for (let key in LogLevel) {
-        if (LogLevel[key] === level) {
-          logLevel = parseInt(key);
-        }
-      }
-      return
-    }
+  setLogLevel: (level: LogLevel) => {
     logLevel = level ?? LogLevel.fatal
   },
 
